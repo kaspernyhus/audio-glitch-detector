@@ -1,4 +1,5 @@
 # Detect discontinuities in sine wave
+Detect discontinuity by looking at the first derivative. Only works for sine wave signals.
 
 ### How to use
 ```
