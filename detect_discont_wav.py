@@ -5,12 +5,17 @@ import sys
 import argparse
 
 
-def detect_discont(wave):
-    # differentiation
+def detect_discont(wave: np.ndarray, channels: int=1) -> np.ndarray:
+    """Calculating the absolute value of the first derivative of the signal"""
     filter = [-1, 1]
-    dif = np.convolve(wave, filter)
-    absdif = np.abs(dif)
-    return absdif
+
+    if wave.ndim == 1:
+        signal_deriv = np.zeros(wave)
+
+
+    for channel in channels:
+        signal_deriv.append(np.abs(np.convolve(wave[channel], filter)))
+    return signal_deriv
 
 
 def count_discont(absdif, threshold=0.5):
@@ -43,6 +48,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", help="wave file to analyse")
     parser.add_argument(
+        "-c",
+        "--channels",
+        default=1,
+        required=False,
+        help="Number of channels"
+    )
+    parser.add_argument(
         "-t",
         "--threshold",
         default=0.15,
@@ -60,6 +72,9 @@ def main():
 
     try:
         with wave.open(args.filename, "rb") as wf:
+            channels = wf.getnchannels()
+            print("channels: ", channels)
+
             data = wf.readframes(-1)
             data = np.frombuffer(data, dtype=np.int16)
             data = normalize_data(data)
