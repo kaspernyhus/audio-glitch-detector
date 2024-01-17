@@ -1,6 +1,7 @@
 from datetime import timedelta
 import numpy as np
 import soundfile as sf
+from tqdm import tqdm
 
 
 def get_time_ms(frame_num: int, samples_rate: int) -> int:
@@ -44,6 +45,9 @@ class DetectDiscontinuities:
         self.discontinuities: list[int] = []
         self.threshold = threshold
 
+        print("--------------------------------------------")
+        print(f"Detecting discontinuities in file: {self.file_path}")
+
     def open_file(self):
         """Open the .wav file"""
         try:
@@ -74,15 +78,21 @@ class DetectDiscontinuities:
         self.current_frame += self.blocksize - self.overlap
 
     def process_file(self) -> list[int]:
-        """Process the file in blocks"""
+        """Process the file in blocks, with a progress bar showing the estimated frames left."""
         if self.file is None:
             print("File is not open. Call open_file() first.")
             return
+
+        total_frames = self.file_info.frames
+        block_count = int(total_frames / (self.blocksize - self.overlap)) + 1
+
         try:
-            for block in sf.blocks(
-                self.file_path, blocksize=self.blocksize, overlap=self.overlap
-            ):
-                self._process_block(block)
+            with tqdm(total=block_count, desc="Processing", unit="block") as pbar:
+                for block in sf.blocks(
+                    self.file_path, blocksize=self.blocksize, overlap=self.overlap
+                ):
+                    self._process_block(block)
+                    pbar.update(1)  # Update the progress bar by one block
         except Exception as e:
             print(f"Error processing blocks: {e}")
 
