@@ -1,3 +1,4 @@
+import sys
 from datetime import timedelta
 import numpy as np
 import soundfile as sf
@@ -45,8 +46,11 @@ class DetectDiscontinuities:
         self.discontinuities: list[int] = []
         self.threshold = threshold
 
-        print("--------------------------------------------")
+        self.banner()
         print(f"Detecting discontinuities in file: {self.file_path}")
+
+    def banner(self):
+        print("-----------------------------------------------------------------------")
 
     def open_file(self):
         """Open the .wav file"""
@@ -56,7 +60,9 @@ class DetectDiscontinuities:
             self.blocksize = self.file_info.samplerate
             self.overlap = int(self.file_info.samplerate / 1000)
         except Exception as e:
-            print(f"Error opening file: {e}")
+            print(f"ERROR: {e}")
+            self.banner()
+            sys.exit(1)
 
     def _process_block(self, block):
         # Create an ndarray for each channel
@@ -102,12 +108,12 @@ class DetectDiscontinuities:
         return self.discontinuities
 
     def show_results(self):
-        print("--------------------------------------------")
+        self.banner()
         print("Number of discontinuities detected: ", len(self.discontinuities))
         for disc in self.discontinuities:
             ms = get_time_ms(disc, self.file_info.samplerate)
             print(format_ms(ms))
-        print("--------------------------------------------")
+        self.banner()
 
     def close_file(self):
         """Close the file"""
