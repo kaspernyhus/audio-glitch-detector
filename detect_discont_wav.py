@@ -18,14 +18,15 @@ def calc_abs_derivative(samples: np.ndarray) -> np.ndarray:
     return signal_deriv
 
 
-def count_discontinuities(abs_deriv: np.ndarray, threshold=0.5) -> list[int]:
+def count_discontinuities(abs_deriv: np.ndarray, threshold) -> list[int]:
     """Count the number of discontinuities in the signal above a threshold"""
     num_channels = abs_deriv.shape[0]
     counts = [0] * num_channels
 
     for channel in range(num_channels):
-        for sample in abs_deriv[channel][1:-1]:
+        for index, sample in enumerate(abs_deriv[channel][1:-1]):
             if sample > threshold:
+                print(index + 1)
                 counts[channel] += 1
 
     return counts
