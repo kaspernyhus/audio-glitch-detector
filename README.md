@@ -1,7 +1,14 @@
 # Detect discontinuities in sine wave
 Detect discontinuity by looking at the first derivative. Only works for sine wave signals.
 
-### How to use
+## Setup
+OPTIONAL: make a python virtual environment and activate it
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+## How to use
 ```
 python detect_discontinuity.py <file.wav>
 ```
