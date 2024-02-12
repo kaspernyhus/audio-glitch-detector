@@ -11,23 +11,29 @@ def main():
         "--threshold",
         default=0.1,
         required=False,
-        help="threshold for discontinuity",
+        help="discontinuity detection threshold > 0.06",
     )
     parser.add_argument(
-        "-p",
-        "--plot",
-        default=False,
+        "-m",
+        "--mode",
+        default="file",
         required=False,
-        help="plot the wave and the derivative",
+        help="mode: file or stream",
     )
+    parser.add_argument("-f", "--filename", help="wave file to analyse")
+
     args = parser.parse_args()
 
+    mode = args.mode
     filename = args.filename
     threshold = args.threshold
 
-    with DetectDiscontinuitiesFile(filename, threshold) as dd:
-        dd.process_file()
-        dd.show_results()
+    if mode == "file":
+        with DetectDiscontinuitiesFile(filename, threshold) as dd:
+            dd.process_file()
+            dd.show_results()
+    else:
+        pass
 
 
 if __name__ == "__main__":

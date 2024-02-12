@@ -1,7 +1,7 @@
 import sys
 import soundfile as sf
 from tqdm import tqdm
-from utils import calc_abs_derivative, get_discontinuities, get_time_ms, format_ms
+import utils as utils
 
 
 class DetectDiscontinuitiesFile:
@@ -40,8 +40,8 @@ class DetectDiscontinuitiesFile:
         else:
             samples = block.reshape(1, -1)
 
-        abs_deriv = calc_abs_derivative(samples)
-        block_discont = get_discontinuities(abs_deriv, threshold=self.threshold)
+        abs_deriv = utils.calc_abs_derivative(samples)
+        block_discont = utils.get_discontinuities(abs_deriv, threshold=self.threshold)
 
         for channel in range(self.file_info.channels):
             for discont in block_discont[channel]:
@@ -78,8 +78,8 @@ class DetectDiscontinuitiesFile:
         self.banner()
         print("Number of discontinuities detected: ", len(self.discontinuities))
         for disc in self.discontinuities:
-            ms = get_time_ms(disc, self.file_info.samplerate)
-            print(format_ms(ms))
+            ms = utils.get_time_ms(disc, self.file_info.samplerate)
+            print(utils.format_ms(ms))
         self.banner()
 
     def close_file(self):
