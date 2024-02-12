@@ -1,6 +1,6 @@
 import sys
 import argparse
-from _detector.detect_discontinuities import DetectDiscontinuities
+from detectors.detect_discontinuity_file import DetectDiscontinuitiesFile
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     filename = args.filename
     threshold = args.threshold
 
-    with DetectDiscontinuities(filename, threshold) as dd:
+    with DetectDiscontinuitiesFile(filename, threshold) as dd:
         dd.process_file()
         dd.show_results()
 

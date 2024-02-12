@@ -1,0 +1,61 @@
+import numpy as np
+from datetime import timedelta
+
+
+def calc_abs_derivative(samples: np.ndarray) -> np.ndarray:
+    """Calculating the absolute value of the first derivative of the signal"""
+    num_channels = samples.shape[0]
+    signal_deriv = np.zeros(samples.shape)
+    filter = [-1, 1]
+    for channel in range(num_channels):
+        signal_deriv[channel] = np.abs(np.convolve(samples[channel], filter))[:-1]
+    return signal_deriv
+
+
+def get_discontinuities(abs_deriv: np.ndarray, threshold=0.5) -> list[list[int]]:
+    """Return a list of sample numbers where a discontinuity in the signal is detected"""
+    num_channels = abs_deriv.shape[0]
+    counts = [[]] * num_channels
+    for channel in range(num_channels):
+        for index, sample in enumerate(abs_deriv[channel][1:-1]):
+            if sample > threshold:
+                counts[channel].append(index + 1)
+    return counts
+
+
+def remove_duplicates(discontinuities: list[int], window=10):
+    """remove duplicates within a window of samples"""
+    if discontinuities:
+        discont = list(set(discontinuities))
+        discont.sort()
+        discont_cleaned = [discont[0]]
+        for value in discont[1:]:
+            if value - discont_cleaned[-1] >= window:
+                discont_cleaned.append(value)
+        return discont_cleaned
+    else:
+        return []
+
+
+def normalize_data(data):
+    """Normalize data to floats between -1.0 and 1.0"""
+    # Convert data to float
+    data = data.astype(float)
+    # Find the maximum absolute value in the data
+    max_val = np.max(np.abs(data))
+    # Normalize data to floats between -1.0 and 1.0
+    data /= max_val
+    return data
+
+
+def split_channels(samples: np.ndarray, channels: int) -> np.ndarray:
+    return np.vstack([samples[i::channels] for i in range(channels)])
+
+
+def get_time_ms(frame_num: int, samples_rate: int) -> int:
+    return frame_num / (samples_rate / 1000)
+
+
+def format_ms(ms: float) -> timedelta:
+    td = timedelta(milliseconds=ms)
+    return td

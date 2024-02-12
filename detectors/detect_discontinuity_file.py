@@ -1,41 +1,10 @@
 import sys
-from datetime import timedelta
-import numpy as np
 import soundfile as sf
 from tqdm import tqdm
+from utils import calc_abs_derivative, get_discontinuities, get_time_ms, format_ms
 
 
-def get_time_ms(frame_num: int, samples_rate: int) -> int:
-    return frame_num / (samples_rate / 1000)
-
-
-def format_ms(ms: float) -> timedelta:
-    td = timedelta(milliseconds=ms)
-    return td
-
-
-def calc_abs_derivative(samples: np.ndarray) -> np.ndarray:
-    """Calculating the absolute value of the first derivative of the signal"""
-    num_channels = samples.shape[0]
-    signal_deriv = np.zeros(samples.shape)
-    filter = [-1, 1]
-    for channel in range(num_channels):
-        signal_deriv[channel] = np.abs(np.convolve(samples[channel], filter))[:-1]
-    return signal_deriv
-
-
-def get_discontinuities(abs_deriv: np.ndarray, threshold=0.5) -> list[list[int]]:
-    """Return a list of sample numbers where a discontinuity in the signal is detected"""
-    num_channels = abs_deriv.shape[0]
-    counts = [[]] * num_channels
-    for channel in range(num_channels):
-        for index, sample in enumerate(abs_deriv[channel][1:-1]):
-            if sample > threshold:
-                counts[channel].append(index + 1)
-    return counts
-
-
-class DetectDiscontinuities:
+class DetectDiscontinuitiesFile:
     def __init__(self, file_path, threshold: float = 0.1):
         self.file_path = file_path
         self.file = None
@@ -94,9 +63,7 @@ class DetectDiscontinuities:
 
         try:
             with tqdm(total=block_count, desc="Processing", unit="block") as pbar:
-                for block in sf.blocks(
-                    self.file_path, blocksize=self.blocksize, overlap=self.overlap
-                ):
+                for block in sf.blocks(self.file_path, blocksize=self.blocksize, overlap=self.overlap):
                     self._process_block(block)
                     pbar.update(1)  # Update the progress bar by one block
         except Exception as e:
@@ -129,3 +96,12 @@ class DetectDiscontinuities:
     def __exit__(self, exc_type, exc_value, traceback):
         """Context manager exit method, ensures file is closed"""
         self.close_file()
+
+
+if __name__ == "__main__":
+    filename = "test_files/sine_discont_2_stereo.wav"
+    threshold = 0.2
+
+    with DetectDiscontinuitiesFile(filename, threshold) as dd:
+        dd.process_file()
+        dd.show_results()
