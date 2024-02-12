@@ -1,6 +1,5 @@
 import pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
 import utils as utils
 from dataclasses import dataclass
 
