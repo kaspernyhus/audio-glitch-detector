@@ -14,20 +14,20 @@ import utils.utils as utils
 
 
 @dataclass
-class audio_format:
+class AudioFormat:
     FORMAT: int = pyaudio.paInt16
     CHANNELS: int = 2
     RATE: int = 48000
     CHUNK: int = 1024
 
 
-class DetectDiscontinuitiesRealtime:
-    def __init__(self, format: audio_format, device_id=None, threshold: float = 0.1):
+class DetectDiscontinuitiesStream:
+    def __init__(self, format: AudioFormat, device_id=None, threshold: float = 0.1):
         self.device_id = device_id
         self.threshold = threshold
         self.p = pyaudio.PyAudio()
         self.input_stream = None
-        self.audio_format = format
+        self.AudioFormat = format
 
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
@@ -49,11 +49,11 @@ class DetectDiscontinuitiesRealtime:
     def start(self):
         """Start the audio stream and process the data in realtime"""
         self.input_stream = self.p.open(
-            format=self.audio_format.FORMAT,
-            channels=self.audio_format.CHANNELS,
-            rate=self.audio_format.RATE,
+            format=self.AudioFormat.FORMAT,
+            channels=self.AudioFormat.CHANNELS,
+            rate=self.AudioFormat.RATE,
             input=True,
-            frames_per_buffer=self.audio_format.CHUNK,
+            frames_per_buffer=self.AudioFormat.CHUNK,
         )
 
         total_discontinuities = 0
@@ -63,7 +63,7 @@ class DetectDiscontinuitiesRealtime:
             #     input_data = input_stream.read(CHUNK)
 
             while True:
-                input_data = self.input_stream.read(self.audio_format.CHUNK)
+                input_data = self.input_stream.read(self.AudioFormat.CHUNK)
                 discontinuities = self._process_audio_data(input_data)
                 if discontinuities > 0:
                     total_discontinuities += discontinuities
@@ -82,6 +82,6 @@ class DetectDiscontinuitiesRealtime:
 
 if __name__ == "__main__":
     print("Detecting Discontinuities in sine waves realtime")
-    audio_format = audio_format(FORMAT=pyaudio.paInt16, CHANNELS=2, RATE=48000, CHUNK=1024)
-    detector = DetectDiscontinuitiesRealtime(audio_format)
+    AudioFormat = AudioFormat(FORMAT=pyaudio.paInt16, CHANNELS=2, RATE=48000, CHUNK=1024)
+    detector = DetectDiscontinuitiesStream(AudioFormat)
     detector.start()
