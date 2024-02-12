@@ -1,5 +1,12 @@
 # Detect discontinuities in sine wave
-Detect discontinuity by looking at the first derivative. Only works for sine wave signals.
+Detect discontinuity in audio signals by looking at the first derivative. Only works for sine wave signals.
+
+## Modes
+- file
+- stream
+
+File mode can analyze .wav files
+Stream will open a portAudio device that can be used for realtime analysis
 
 ## Setup
 OPTIONAL: make a python virtual environment and activate it
@@ -10,14 +17,5 @@ pip install -r requirements.txt
 
 ## How to use
 ```
-python detect_discontinuity.py <file.wav>
+python detect_discontinuity.py -h
 ```
-
-
-### Use class as content manager
-```
- with DetectDiscontinuities(filename, threshold) as dd:
-        dd.process_blocks()
-        dd.show_results()
-```
-
