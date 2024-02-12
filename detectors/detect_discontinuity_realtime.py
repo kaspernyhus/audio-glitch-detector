@@ -1,7 +1,16 @@
+import sys
+import os
 import pyaudio
 import numpy as np
-import utils as utils
 from dataclasses import dataclass
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)  # Assuming this script is in the 'detectors' directory
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+import utils.utils as utils
 
 
 @dataclass

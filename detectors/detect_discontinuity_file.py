@@ -1,7 +1,15 @@
 import sys
+import os
 import soundfile as sf
 from tqdm import tqdm
-import utils as utils
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)  # Assuming this script is in the 'detectors' directory
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+import utils.utils as utils
 
 
 class DetectDiscontinuitiesFile:
