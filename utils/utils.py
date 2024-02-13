@@ -48,14 +48,25 @@ def normalize_data(data):
     return data
 
 
+def get_samples_from_block(block: bytes, channels: int, bit_depth):
+    """Convert raw bytes to NumPy array and split channels if necessary. Normalize data to floats between -1.0 and 1.0."""
+    data = np.frombuffer(block, dtype=bit_depth)
+    samples = split_channels(data, channels)
+    samples = normalize_data(samples)
+    return samples
+
+
 def split_channels(samples: np.ndarray, channels: int) -> np.ndarray:
+    """Split interleaved samples into separate channels"""
     return np.vstack([samples[i::channels] for i in range(channels)])
 
 
 def get_time_ms(frame_num: int, samples_rate: int) -> int:
+    """Convert frame number to milliseconds"""
     return frame_num / (samples_rate / 1000)
 
 
 def format_ms(ms: float) -> timedelta:
+    """Convert milliseconds to a timedelta object"""
     td = timedelta(milliseconds=ms)
     return td
