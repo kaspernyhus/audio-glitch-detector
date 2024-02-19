@@ -38,6 +38,10 @@ class RichOutput:
         with self.lock:
             self.count += count
 
+    def reset(self) -> None:
+        with self.lock:
+            self.count = 0
+
     def _update_output(self) -> None:
         elapsed = self._get_elapsed_time()
         with self.lock:

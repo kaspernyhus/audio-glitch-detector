@@ -1,10 +1,12 @@
 import sys
 import os
+import signal
+import time
 import pyaudio
 import numpy as np
-from threading import Event
+from threading import Event, Thread
 from typing import Callable
-from dataclasses import dataclass
+from utils.audio_format import AudioFormat
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
@@ -15,22 +17,16 @@ if project_root not in sys.path:
 import utils.utils as utils
 
 
-@dataclass
-class AudioFormat:
-    FORMAT: int = pyaudio.paInt16
-    CHANNELS: int = 2
-    RATE: int = 48000
-    CHUNK: int = 1024
-
-
 class DetectDiscontinuitiesStream:
-    def __init__(self, format: AudioFormat, device_id=None, threshold: float = 0.1):
+    def __init__(self, format: AudioFormat, device_id=None, threshold: float = 0.1, save_blocks: bool = False) -> None:
         self.device_id = device_id
         self.threshold = threshold
         self.p = pyaudio.PyAudio()
         self.input_stream = None
         self.AudioFormat = format
+        self.save_blocks = save_blocks
         self.saved_blocks = []
+        self.running = False
 
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
@@ -47,8 +43,30 @@ class DetectDiscontinuitiesStream:
         num_discont = len(discont)
         return num_discont
 
-    def start(self, count_discontinuities: Callable[[int], None], exit_event: Event):
-        """Start the audio stream and process the data in realtime"""
+    def _run(self, exit_event: Event, count_discontinuities: Callable[[int], None]) -> None:
+        try:
+            while True:
+                if exit_event.is_set():
+                    print("Closing audio processing")
+                    self.close()
+                    break
+
+                if not self.running:
+                    time.sleep(0.1)
+                    continue
+
+                input_data = self.input_stream.read(self.AudioFormat.CHUNK)
+                discontinuities = self._process_audio_data(input_data)
+                if discontinuities > 0:
+                    count_discontinuities(discontinuities)
+                    if self.save_blocks:
+                        self.saved_blocks.append(input_data)
+
+        except KeyboardInterrupt:
+            print("Interrupted by user")
+            self.stop()
+
+    def _open_stream(self):
         self.input_stream = self.p.open(
             format=self.AudioFormat.FORMAT,
             channels=self.AudioFormat.CHANNELS,
@@ -57,32 +75,45 @@ class DetectDiscontinuitiesStream:
             frames_per_buffer=self.AudioFormat.CHUNK,
         )
 
-        try:
-            while True:
-                input_data = self.input_stream.read(self.AudioFormat.CHUNK)
-                discontinuities = self._process_audio_data(input_data)
-                if discontinuities > 0:
-                    count_discontinuities(discontinuities)
-                    self.saved_blocks.append(input_data)
-                if exit_event.is_set():
-                    print("Stopping audio processing")
-                    break
+    def open(self, count_discontinuities: Callable[[int], None], exit_event: Event):
+        """Start the audio stream and process the data in realtime"""
+        self._open_stream()
+        audio_thread = Thread(target=self._run, args=(exit_event, count_discontinuities))
+        audio_thread.start()
+        return audio_thread
 
-        except KeyboardInterrupt:
-            print("Interrupted by user")
-            self.stop()
+    def start(self):
+        """Start the audio stream"""
+        self.running = True
+        print("Audio processing started")
 
     def stop(self):
+        """Pause the audio stream"""
+        self.running = False
+
+    def close(self):
         """Stop the audio stream"""
         self.input_stream.stop_stream()
         self.input_stream.close()
         self.p.terminate()
 
-    def get_blocks(self):
+    def reset(self):
+        """Reset the saved blocks"""
+        self.saved_blocks = []
+        print("Saved blocks reset")
+
+    def get_saved_blocks(self):
         return self.saved_blocks
 
 
 if __name__ == "__main__":
+    exit_event = Event()
+
+    def signal_handler(signum, frame):
+        exit_event.set()
+
+    signal.signal(signal.SIGINT, signal_handler)
+
     print("Detecting Discontinuities in sine waves realtime")
     AudioFormat = AudioFormat(FORMAT=pyaudio.paInt16, CHANNELS=2, RATE=48000, CHUNK=1024)
     detector = DetectDiscontinuitiesStream(AudioFormat)
@@ -90,4 +121,10 @@ if __name__ == "__main__":
     def logger(int):
         print(int)
 
-    detector.start(logger)
+    audio_thread = detector.open(logger, exit_event)
+    detector.start()
+    print("Audio processing started")
+
+    print("Press Ctrl+C to stop")
+    audio_thread.join()
+    print("Audio processing stopped")
