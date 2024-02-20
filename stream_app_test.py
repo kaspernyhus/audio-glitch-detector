@@ -1,5 +1,6 @@
 import sys
 import signal
+import time
 import threading
 import numpy as np
 from utils.rich_output import RichOutput
@@ -15,29 +16,28 @@ if __name__ == "__main__":
     rich.header("Test header")
     rich.live_output_start(exit_event)
 
-    detector = DetectDiscontinuitiesStream(AudioFormat())
-    detector.open(rich.increment, exit_event)
+    # detector = DetectDiscontinuitiesStream(AudioFormat())
+    # detector.open(rich.increment, exit_event)
 
     with KeyboardInput() as keys:
-        print("Press any key ('q' to exit)")
+        # rich.log("Press any key ('q' to exit)")
         while True:
             key = keys.getch()
             if key == "q":
                 exit_event.set()
                 break
             if key == "r":
-                detector.reset()
                 rich.reset()
-                print("Reset")
-            if key == "p":
-                if detector.running:
-                    detector.pause()
-                    print("Paused")
+                rich.log("Reset")
+            if key == "s":
+                if rich.is_running():
+                    rich.stop()
+                    rich.log("Stopped")
                 else:
-                    detector.start()
-                    print("Started")
+                    rich.start()
+                    rich.log("Started")
             if key == "h":
-                print("Press 'q' to exit, 'r' to reset, 'p' to pause/resume the detector")
+                rich.log("Press 'q' to exit, 'r' to reset, 'p' to pause/resume the detector")
 
-    print("Exiting")
+    rich.log("Exiting")
     sys.exit(0)

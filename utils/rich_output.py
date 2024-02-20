@@ -12,6 +12,8 @@ class RichOutput:
         self.start_time = time.time()
         self.count = 0
         self.lock = Lock()
+        self.running = True
+        self.elapsed_time = "00:00:00"
 
     def _format_time(self, seconds) -> str:
         """Format elapsed time into HH:MM:SS."""
@@ -31,7 +33,9 @@ class RichOutput:
         self.console.print(header)
 
     def log(self, log_str: str) -> None:
-        self.console.log(log_str)
+        """Print a log message."""
+        with self.lock:
+            self.console.log(log_str)
 
     def increment(self, count: int) -> None:
         self.log(f"Incrementing count by {count}")
@@ -41,12 +45,24 @@ class RichOutput:
     def reset(self) -> None:
         with self.lock:
             self.count = 0
+        self.start_time = time.time()
 
-    def _update_output(self) -> None:
-        elapsed = self._get_elapsed_time()
+    def start(self) -> None:
+        self.start_time = time.time()
+        self.running = True
+
+    def stop(self) -> None:
+        self.running = False
+
+    def is_running(self) -> bool:
+        return self.running
+
+    def _update_output(self) -> Panel:
+        if self.running:
+            self.elapsed_time = self._get_elapsed_time()
         with self.lock:
-            text_obj = Text(f"Elapsed time: {elapsed} seconds\nDetected discontinuities: {self.count}", style="bold")
-        return text_obj
+            text = Text(f"Elapsed time: {self.elapsed_time}\nHej", style="bold white", no_wrap=True)
+        return text
 
     def _run_live_output(self, exit_event: Event) -> None:
         with Live(self._update_output(), console=self.console, refresh_per_second=10) as live:
