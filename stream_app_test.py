@@ -1,43 +1,39 @@
-import sys
 import signal
-import time
-import threading
-import numpy as np
+from threading import Event
+from detectors.detect_discontinuity_stream import DetectDiscontinuitiesStream
+from utils.audio_format import AudioFormat, AudioBits
 from utils.rich_output import RichOutput
-from utils.utils import get_samples_from_block
-from detectors.detect_discontinuity_stream import DetectDiscontinuitiesStream, AudioFormat
-from utils.key_input import KeyboardInput
 
-exit_event = threading.Event()
+exit_event = Event()
+
+DEV_ID = 15
+
+
+def signal_handler(sig, frame):
+    print("Exiting")
+    exit_event.set()
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)
+
+    detect = DetectDiscontinuitiesStream(
+        AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=1024),
+        device_id=DEV_ID,
+        save_blocks=False,
+        threshold=0.1,
+    )
+
     rich = RichOutput()
-    rich.header("Test header")
-    rich.live_output_start(exit_event)
+    rich.header("Audio Discontinuity Detector")
 
-    # detector = DetectDiscontinuitiesStream(AudioFormat())
-    # detector.open(rich.increment, exit_event)
+    t = detect.open(count_discontinuities=rich.increment, exit_event=exit_event)
 
-    with KeyboardInput() as keys:
-        # rich.log("Press any key ('q' to exit)")
-        while True:
-            key = keys.getch()
-            if key == "q":
-                exit_event.set()
-                break
-            if key == "r":
-                rich.reset()
-                rich.log("Reset")
-            if key == "s":
-                if rich.is_running():
-                    rich.stop()
-                    rich.log("Stopped")
-                else:
-                    rich.start()
-                    rich.log("Started")
-            if key == "h":
-                rich.log("Press 'q' to exit, 'r' to reset, 'p' to pause/resume the detector")
+    rich.live_output_start(exit_event=exit_event)
 
-    rich.log("Exiting")
-    sys.exit(0)
+    rich.log("Audio processing started")
+    detect.start()
+
+    t.join()
+
+    print("Audio processing stopped")

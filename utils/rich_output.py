@@ -1,4 +1,5 @@
 import time
+import random
 from threading import Event, Thread, Lock
 from rich.console import Console
 from rich.live import Live
@@ -14,6 +15,7 @@ class RichOutput:
         self.lock = Lock()
         self.running = True
         self.elapsed_time = "00:00:00"
+        self.vol = [0, 0]
 
     def _format_time(self, seconds) -> str:
         """Format elapsed time into HH:MM:SS."""
@@ -57,19 +59,20 @@ class RichOutput:
     def is_running(self) -> bool:
         return self.running
 
-    def _update_output(self) -> Panel:
-        if self.running:
-            self.elapsed_time = self._get_elapsed_time()
-        with self.lock:
-            text = Text(f"Elapsed time: {self.elapsed_time}\nHej", style="bold white", no_wrap=True)
-        return text
+    def _update_output(self, vol1, vol2):
+        text1 = Text(f"{vol1}.0dB\n{vol2}.0dB", justify="left")
+        return Panel(text1, title="Volume", style="bold white")
 
     def _run_live_output(self, exit_event: Event) -> None:
-        with Live(self._update_output(), console=self.console, refresh_per_second=10) as live:
+        with Live(self._update_output(self.vol[0], self.vol[1]), console=self.console, auto_refresh=False) as live:
             while True:
-                live.update(self._update_output())
+                self.vol[0] = -random.randint(0, 100)
+                self.vol[1] = -random.randint(0, 100)
+                live.update(self._update_output(self.vol[0], self.vol[1]))
+                live.refresh()
                 if exit_event.is_set():
                     break
+                time.sleep(0.1)
 
     def live_output_start(self, exit_event: Event) -> None:
         thread = Thread(target=self._run_live_output, args=(exit_event,))

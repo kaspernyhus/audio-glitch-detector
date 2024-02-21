@@ -48,8 +48,13 @@ def normalize_data(data):
     return data
 
 
-def get_samples_from_block(block: bytes, channels: int, bit_depth):
+def get_samples_from_block(block: bytes, channels: int, bit_depth: int) -> np.ndarray:
     """Convert raw bytes to NumPy array and split channels if necessary. Normalize data to floats between -1.0 and 1.0."""
+    if bit_depth == 16:
+        bit_depth = np.int16
+    elif bit_depth == 32:
+        bit_depth = np.int32
+
     data = np.frombuffer(block, dtype=bit_depth)
     samples = split_channels(data, channels)
     samples = normalize_data(samples)
