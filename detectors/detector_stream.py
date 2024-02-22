@@ -7,10 +7,10 @@ import numpy as np
 from threading import Event, Thread
 from typing import Callable
 from utils.audio_format import AudioFormat
-from utils import utils
+from utils import utils, audio_meter
 
 
-class DetectDiscontinuitiesStream:
+class DiscontinuityDetectorStream:
     def __init__(self, format: AudioFormat, device_id=None, threshold: float = 0.1, save_blocks: bool = False) -> None:
         self.device_id = device_id
         self.threshold = threshold
@@ -20,12 +20,17 @@ class DetectDiscontinuitiesStream:
         self.save_blocks = save_blocks
         self.saved_blocks = []
         self.running = False
+        self.meter = audio_meter.Meter()
 
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
         samples = utils.get_samples_from_block(
             block=data, channels=self.AudioFormat.CHANNELS, bit_depth=self.AudioFormat.FORMAT
         )
+        samples = utils.split_channels(samples, self.AudioFormat.CHANNELS)
+        samples = utils.convert_to_float(samples)
+        self.meter.update(samples)
+        samples = utils.normalize_data(samples)
 
         abs_deriv = utils.calc_abs_derivative(samples)
         block_discont = utils.get_discontinuities(abs_deriv, threshold=0.2)
@@ -36,13 +41,13 @@ class DetectDiscontinuitiesStream:
 
         discont = utils.remove_duplicates(discontinuities)
         num_discont = len(discont)
+
         return num_discont
 
     def _run(self, exit_event: Event, count_discontinuities: Callable[[int], None]) -> None:
         try:
             while True:
                 if exit_event.is_set():
-                    print("Closing audio processing")
                     self.close()
                     break
 
@@ -61,7 +66,6 @@ class DetectDiscontinuitiesStream:
                     print(f"Error reading audio data: {e}")
 
         except KeyboardInterrupt:
-            print("Interrupted by user")
             self.close()
 
     def _open_stream(self):
@@ -90,7 +94,6 @@ class DetectDiscontinuitiesStream:
     def start(self):
         """Start the audio stream"""
         self.running = True
-        print("Audio processing started")
 
     def stop(self):
         """Pause the audio stream"""
@@ -105,7 +108,9 @@ class DetectDiscontinuitiesStream:
     def reset(self):
         """Reset the saved blocks"""
         self.saved_blocks = []
-        print("Saved blocks reset")
 
     def get_saved_blocks(self):
         return self.saved_blocks
+
+    def get_meter_data(self):
+        return self.meter.get_peak()

@@ -1,1 +1,2 @@
-from .detect_discontinuity_file import DetectDiscontinuitiesFile
+from .detector_file import DiscontinuityDetectorFile
+from .detector_stream import DiscontinuityDetectorStream

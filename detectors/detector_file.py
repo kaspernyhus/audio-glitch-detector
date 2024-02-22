@@ -2,17 +2,10 @@ import sys
 import os
 import soundfile as sf
 from tqdm import tqdm
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-
-if project_root not in sys.path:
-    sys.path.append(project_root)
-
-import utils.utils as utils
+from utils import utils
 
 
-class DetectDiscontinuitiesFile:
+class DiscontinuityDetectorFile:
     def __init__(self, file_path, threshold: float = 0.1):
         self.file_path = file_path
         self.file = None
@@ -104,12 +97,3 @@ class DetectDiscontinuitiesFile:
     def __exit__(self, exc_type, exc_value, traceback):
         """Context manager exit method, ensures file is closed"""
         self.close_file()
-
-
-if __name__ == "__main__":
-    filename = "test_files/sine_discont_2_stereo.wav"
-    threshold = 0.2
-
-    with DetectDiscontinuitiesFile(filename, threshold) as dd:
-        dd.process_file()
-        dd.show_results()

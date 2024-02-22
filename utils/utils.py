@@ -39,8 +39,6 @@ def remove_duplicates(discontinuities: list[int], window=10):
 
 def normalize_data(data):
     """Normalize data to floats between -1.0 and 1.0"""
-    # Convert data to float
-    data = data.astype(float)
     # Find the maximum absolute value in the data
     max_val = np.max(np.abs(data))
     # Normalize data to floats between -1.0 and 1.0
@@ -55,10 +53,12 @@ def get_samples_from_block(block: bytes, channels: int, bit_depth: int) -> np.nd
     elif bit_depth == 32:
         bit_depth = np.int32
 
-    data = np.frombuffer(block, dtype=bit_depth)
-    samples = split_channels(data, channels)
-    samples = normalize_data(samples)
-    return samples
+    return np.frombuffer(block, dtype=bit_depth)
+
+
+def convert_to_float(data: np.ndarray) -> np.ndarray:
+    """Convert integer data to floats between -1.0 and 1.0"""
+    return data.astype(float) / np.iinfo(data.dtype).max
 
 
 def split_channels(samples: np.ndarray, channels: int) -> np.ndarray:
