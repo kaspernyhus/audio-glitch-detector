@@ -39,15 +39,23 @@ def main():
         help="Sound device ID. Use list_devices.py to list available devices",
     )
     parser.add_argument(
+        "--chunk_size",
+        type=int,
+        required=False,
+        default=640,
+        help="Number of samples to process",
+    )
+    parser.add_argument(
         "-s", "--save_blocks", required=False, default=False, help="Save erroneous audio blocks as .wav files"
     )
     args = parser.parse_args()
     device_id = args.device_id
     threshold = args.threshold
     save_blocks = args.save_blocks
+    chunk_size = args.chunk_size
 
     detect = DiscontinuityDetectorStream(
-        AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=1024),
+        AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size),
         device_id=device_id,
         save_blocks=save_blocks,
         threshold=threshold,
