@@ -39,10 +39,11 @@ def remove_duplicates(discontinuities: list[int], window=10):
 
 def normalize_data(data):
     """Normalize data to floats between -1.0 and 1.0"""
-    # Find the maximum absolute value in the data
     max_val = np.max(np.abs(data))
-    # Normalize data to floats between -1.0 and 1.0
-    data /= max_val
+    if max_val == 0:
+        return data  # Or np.zeros_like(data) if you want all zero output
+
+    data = data / max_val
     return data
 
 
