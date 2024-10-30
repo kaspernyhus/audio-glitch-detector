@@ -5,6 +5,8 @@ from threading import Event
 from detectors.detector_stream import DiscontinuityDetectorStream
 from utils.audio_format import AudioFormat, AudioBits
 from utils.rich_output import RichOutput
+from utils.audio_devices import list_audio_devices
+
 
 exit_event = Event()
 count = 0
@@ -31,14 +33,6 @@ def main():
         help="discontinuity detection threshold (>0.06)",
     )
     parser.add_argument(
-        "-d",
-        "--device_id",
-        type=int,
-        required=False,
-        default=None,
-        help="Sound device ID. Use list_devices.py to list available devices",
-    )
-    parser.add_argument(
         "--chunk_size",
         type=int,
         required=False,
@@ -49,10 +43,20 @@ def main():
         "-s", "--save_blocks", required=False, default=False, help="Save erroneous audio blocks as .wav files"
     )
     args = parser.parse_args()
-    device_id = args.device_id
     threshold = args.threshold
     save_blocks = args.save_blocks
     chunk_size = args.chunk_size
+
+
+    print("\nSelect audio device")
+    list_audio_devices()
+    device = input("Device ID: ")
+    try:
+        device_id = int(device)
+    except ValueError:
+        print("Invalid device id")
+        exit(1)
+
 
     detect = DiscontinuityDetectorStream(
         AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size),
