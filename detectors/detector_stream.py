@@ -11,9 +11,9 @@ from utils import utils, audio_meter
 
 
 class DiscontinuityDetectorStream:
-    def __init__(self, format: AudioFormat, device_id=None, threshold: float = 0.1, save_blocks: bool = False) -> None:
+    def __init__(self, format: AudioFormat, device_id=None, detection_threshold: float = 0.1, save_blocks: bool = False, signal_threshold: float = -40.0) -> None:
         self.device_id = device_id
-        self.threshold = threshold
+        self.detection_threshold = detection_threshold
         self.p = pyaudio.PyAudio()
         self.input_stream = None
         self.AudioFormat: AudioFormat = format
@@ -21,6 +21,7 @@ class DiscontinuityDetectorStream:
         self.saved_blocks = []
         self.running = False
         self.meter = audio_meter.Meter()
+        self.signal_threshold = signal_threshold
 
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
@@ -29,7 +30,12 @@ class DiscontinuityDetectorStream:
         )
         samples = utils.split_channels(samples, self.AudioFormat.CHANNELS)
         samples = utils.convert_to_float(samples)
+        
+        # If signal level is below threshold, ignore
         self.meter.update(samples)
+        if all(peak < self.signal_threshold for peak in self.meter.get_peak()):
+            return 0
+        
         samples = utils.normalize_data(samples)
 
         abs_deriv = utils.calc_abs_derivative(samples)

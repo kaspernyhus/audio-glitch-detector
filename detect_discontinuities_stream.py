@@ -62,7 +62,7 @@ def main():
         AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size),
         device_id=device_id,
         save_blocks=save_blocks,
-        threshold=threshold,
+        detection_threshold=threshold,
     )
 
     rich = RichOutput()
