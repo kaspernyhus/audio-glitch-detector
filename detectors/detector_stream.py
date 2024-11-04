@@ -1,13 +1,10 @@
-import sys
-import os
-import signal
 import time
 import pyaudio
-import numpy as np
 from threading import Event, Thread
 from typing import Callable
 from utils.audio_format import AudioFormat
 from utils import utils, audio_meter
+from .dsp import calc_abs_derivative, normalize_data, split_channels, get_samples_from_block, convert_to_float
 
 
 class DiscontinuityDetectorStream:
@@ -25,21 +22,21 @@ class DiscontinuityDetectorStream:
 
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
-        samples = utils.get_samples_from_block(
+        samples = get_samples_from_block(
             block=data, channels=self.AudioFormat.CHANNELS, bit_depth=self.AudioFormat.FORMAT
         )
-        samples = utils.split_channels(samples, self.AudioFormat.CHANNELS)
-        samples = utils.convert_to_float(samples)
+        samples = split_channels(samples, self.AudioFormat.CHANNELS)
+        samples = convert_to_float(samples)
         
         # If signal level is below threshold, ignore
         self.meter.update(samples)
         if all(peak < self.signal_threshold for peak in self.meter.get_peak()):
             return 0
         
-        samples = utils.normalize_data(samples)
+        samples = normalize_data(samples)
 
-        abs_deriv = utils.calc_abs_derivative(samples)
-        block_discont = utils.get_discontinuities(abs_deriv, threshold=0.2)
+        abs_deriv = calc_abs_derivative(samples)
+        block_discont = utils.count_discontinuities(abs_deriv, threshold=0.2)
 
         discontinuities = []
         for channel in range(samples.shape[0]):

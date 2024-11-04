@@ -1,2 +1,3 @@
 from .detector_file import DiscontinuityDetectorFile
 from .detector_stream import DiscontinuityDetectorStream
+from .dsp import calc_abs_derivative, normalize_data, convert_to_float, split_channels, get_samples_from_block

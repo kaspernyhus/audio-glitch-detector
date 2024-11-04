@@ -1,8 +1,8 @@
 import sys
-import os
 import soundfile as sf
 from tqdm import tqdm
 from utils import utils
+from .dsp import calc_abs_derivative
 
 
 class DiscontinuityDetectorFile:
@@ -41,8 +41,8 @@ class DiscontinuityDetectorFile:
         else:
             samples = block.reshape(1, -1)
 
-        abs_deriv = utils.calc_abs_derivative(samples)
-        block_discont = utils.get_discontinuities(abs_deriv, threshold=self.threshold)
+        abs_deriv = calc_abs_derivative(samples)
+        block_discont = utils.count_discontinuities(abs_deriv, threshold=self.threshold)
 
         for channel in range(self.file_info.channels):
             for discont in block_discont[channel]:
