@@ -2,9 +2,9 @@ import time
 import pyaudio
 from threading import Event, Thread
 from typing import Callable
-from utils.audio_format import AudioFormat
-from utils import utils, audio_meter
-from .dsp import calc_abs_derivative, normalize_data, split_channels, get_samples_from_block, convert_to_float
+from discontinuity_detector.utils.audio_format import AudioFormat
+from discontinuity_detector.utils import utils, audio_meter
+from discontinuity_detector.utils.dsp import calc_abs_derivative, normalize_data, split_channels, get_samples_from_block, convert_to_float
 
 
 class DiscontinuityDetectorStream:

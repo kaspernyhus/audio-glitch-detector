@@ -2,11 +2,13 @@ import argparse
 import signal
 from time import sleep
 from threading import Event
-from detectors.detector_stream import DiscontinuityDetectorStream
-from detectors.detector_file import DiscontinuityDetectorFile
-from utils.audio_format import AudioFormat, AudioBits
-from utils.rich_output import RichOutput
-from utils.audio_devices import list_audio_devices
+
+from discontinuity_detector.detectors.detector_stream import DiscontinuityDetectorStream
+from discontinuity_detector.detectors.detector_file import DiscontinuityDetectorFile
+from discontinuity_detector.utils.audio_format import AudioFormat, AudioBits
+from discontinuity_detector.utils.rich_output import RichOutput
+from discontinuity_detector.utils.audio_devices import list_audio_devices
+
 
 
 exit_event = Event()

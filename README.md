@@ -5,26 +5,43 @@ Detect discontinuity in audio signals by looking at the first derivative. Only w
 - .wav file
 - audio stream
 
-## Setup
-Make a python virtual environment and activate it
-Install dependencies:
+## Setup using poetry
+Optional:
 ```
-pip install -r requirements.txt
+poetry config virtualenvs.in-project true
+```
+Install dependencies
+```
+poetry install
+```
+
+## See options
+```
+poetry run detect -h
 ```
 
 ## How to use
-
-### .wav file
+### Detect discontinuities in a .wav file
 ```
-python detect_discontinuities_file.py -h
-```
-
-### Stream
-Discover audio device ID
-```
-python list_audio_devices.py
+poetry run detect -f /path/to/file
 ```
 
+### Detect discontinuities in an audio stream
 ```
-python detect_discontinuities_stream.py -h
+poetry run detect
+```
+Select audio device
+
+
+## Test files
+the folder `test_files/` contains files of sine tones with a known number of discontinuities
+```
+poetry run detect -f test_files/sine_discont_2_mono.wav
+```
+
+Outputs
+```
+Number of discontinuities detected:  2
+0:00:01.892857
+0:00:03.288367
 ```

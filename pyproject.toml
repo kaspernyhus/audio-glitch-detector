@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "discontinuity-detector"
+version = "0.1.0"
+description = "Detect discontinuity in sinusoidal audio signals by looking at the first derivative"
+authors = ["Kasper Nyhus <kanyhus@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^2.2.2"
+pyaudio = "^0.2.14"
+soundfile = "^0.13.0"
+tqdm = "^4.67.1"
+rich = "^13.9.4"
+
+[tool.poetry.scripts]
+detect = "discontinuity_detector.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
