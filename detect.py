@@ -55,7 +55,13 @@ def main():
     )
     
     args = parser.parse_args()
-    threshold = args.threshold
+    
+    try:
+        threshold = float(args.threshold)
+    except ValueError:
+        print("Threshold must be a number")
+        exit(1)
+
     save_blocks = args.save_blocks
     chunk_size = args.chunk_size
     filename = args.filename
