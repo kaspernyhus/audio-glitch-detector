@@ -27,12 +27,6 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-m",
-        "--mode",
-        required=True,
-        help="Detection mode (file/stream)",
-    )    
-    parser.add_argument(
         "-t",
         "--threshold",
         default=0.1,
@@ -65,7 +59,11 @@ def main():
     save_blocks = args.save_blocks
     chunk_size = args.chunk_size
     filename = args.filename
-    stream_mode = args.mode == "stream"
+    
+    if filename:
+        stream_mode = False
+    else:
+        stream_mode = True
 
     if not stream_mode:
         with DiscontinuityDetectorFile(filename, threshold) as dd:
