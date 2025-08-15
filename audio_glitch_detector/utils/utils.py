@@ -1,5 +1,6 @@
-import numpy as np
 from datetime import timedelta
+
+import numpy as np
 
 
 def count_discontinuities(abs_deriv: np.ndarray, threshold=0.5) -> list[list[int]]:

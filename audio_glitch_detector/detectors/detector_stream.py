@@ -1,15 +1,17 @@
 import time
-import pyaudio
+from collections.abc import Callable
 from threading import Event, Thread
-from typing import Callable
+
+import pyaudio
+
+from audio_glitch_detector.utils import audio_meter, utils
 from audio_glitch_detector.utils.audio_format import AudioFormat
-from audio_glitch_detector.utils import utils, audio_meter
 from audio_glitch_detector.utils.dsp import (
     calc_abs_derivative,
+    convert_to_float,
+    get_samples_from_block,
     normalize_data,
     split_channels,
-    get_samples_from_block,
-    convert_to_float,
 )
 
 

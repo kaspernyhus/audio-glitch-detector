@@ -1,11 +1,12 @@
 import time
-from typing import Callable
-from threading import Event, Thread, Lock
+from collections.abc import Callable
+from threading import Event, Lock, Thread
+
 from rich.console import Console
 from rich.live import Live
-from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 
 class RichOutput:

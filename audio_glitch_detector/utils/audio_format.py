@@ -1,4 +1,3 @@
-import pyaudio
 from dataclasses import dataclass
 
 

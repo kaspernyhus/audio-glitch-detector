@@ -1,6 +1,8 @@
 import sys
+
 import soundfile as sf
 from tqdm import tqdm
+
 from audio_glitch_detector.utils import utils
 from audio_glitch_detector.utils.dsp import calc_abs_derivative
 
