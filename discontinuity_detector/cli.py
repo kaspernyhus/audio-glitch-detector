@@ -10,7 +10,6 @@ from discontinuity_detector.utils.rich_output import RichOutput
 from discontinuity_detector.utils.audio_devices import list_audio_devices
 
 
-
 exit_event = Event()
 count = 0
 
@@ -43,21 +42,12 @@ def main():
         help="Number of samples to process",
     )
     parser.add_argument(
-        "-s",
-        "--save_blocks",
-        required=False,
-        default=False,
-        help="Save erroneous audio blocks as .wav files"
+        "-s", "--save_blocks", required=False, default=False, help="Save erroneous audio blocks as .wav files"
     )
-    parser.add_argument(
-        "-f", 
-        "--filename", 
-        required=False, 
-        help="wave file to analyse"
-    )
-    
+    parser.add_argument("-f", "--filename", required=False, help="wave file to analyze")
+
     args = parser.parse_args()
-    
+
     try:
         threshold = float(args.threshold)
     except ValueError:
@@ -67,16 +57,16 @@ def main():
     save_blocks = args.save_blocks
     chunk_size = args.chunk_size
     filename = args.filename
-    
+
     if filename:
         stream_mode = False
     else:
         stream_mode = True
 
     if not stream_mode:
-        with DiscontinuityDetectorFile(filename, threshold) as dd:
-            dd.process_file()
-            dd.show_results()
+        with DiscontinuityDetectorFile(filename, threshold) as detector:
+            detector.process_file()
+            detector.show_results()
     else:
         print("\nSelect audio device")
         list_audio_devices()
@@ -87,8 +77,7 @@ def main():
             print("Invalid device id")
             exit(1)
 
-
-        detect = DiscontinuityDetectorStream(
+        detector = DiscontinuityDetectorStream(
             AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size),
             device_id=device_id,
             save_blocks=save_blocks,
@@ -98,11 +87,11 @@ def main():
         rich = RichOutput()
         rich.header("Audio Discontinuity Detector")
 
-        t = detect.open(count_discontinuities=count_discontinuities, exit_event=exit_event)
+        t = detector.open(count_discontinuities=count_discontinuities, exit_event=exit_event)
 
-        rich.live_output_start(exit_event=exit_event, get_meter_data=detect.get_meter_data)
+        rich.live_output_start(exit_event=exit_event, get_meter_data=detector.get_meter_data)
 
-        detect.start()
+        detector.start()
         rich.log("Audio processing started")
         sleep(0.1)
 
