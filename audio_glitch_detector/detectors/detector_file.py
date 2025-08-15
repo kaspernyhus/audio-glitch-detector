@@ -1,8 +1,8 @@
 import sys
 import soundfile as sf
 from tqdm import tqdm
-from discontinuity_detector.utils import utils
-from discontinuity_detector.utils.dsp import calc_abs_derivative
+from audio_glitch_detector.utils import utils
+from audio_glitch_detector.utils.dsp import calc_abs_derivative
 
 
 class DiscontinuityDetectorFile:

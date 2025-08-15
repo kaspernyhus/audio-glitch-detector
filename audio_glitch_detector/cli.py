@@ -3,11 +3,11 @@ import signal
 from time import sleep
 from threading import Event
 
-from discontinuity_detector.detectors.detector_stream import DiscontinuityDetectorStream
-from discontinuity_detector.detectors.detector_file import DiscontinuityDetectorFile
-from discontinuity_detector.utils.audio_format import AudioFormat, AudioBits
-from discontinuity_detector.utils.rich_output import RichOutput
-from discontinuity_detector.utils.audio_devices import list_audio_devices
+from audio_glitch_detector.detectors.detector_stream import DiscontinuityDetectorStream
+from audio_glitch_detector.detectors.detector_file import DiscontinuityDetectorFile
+from audio_glitch_detector.utils.audio_format import AudioFormat, AudioBits
+from audio_glitch_detector.utils.rich_output import RichOutput
+from audio_glitch_detector.utils.audio_devices import list_audio_devices
 
 
 exit_event = Event()

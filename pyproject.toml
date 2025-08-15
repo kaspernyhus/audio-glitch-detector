@@ -1,7 +1,7 @@
 [project]
-name = "discontinuity-detector"
+name = "audio-glitch-detector"
 version = "0.1.0"
-description = "Detect discontinuity in sinusoidal audio signals by looking at the first derivative"
+description = "Detect audio glitches and discontinuities in sinusoidal audio signals"
 authors = [
     {name = "Kasper Nyhus", email = "kanyhus@gmail.com"}
 ]
@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.scripts]
-detect = "discontinuity_detector.cli:main"
+audio-glitch-detector = "audio_glitch_detector.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -56,7 +56,7 @@ testpaths = [
 ]
 
 [tool.coverage.run]
-source = ["discontinuity_detector"]
+source = ["audio_glitch_detector"]
 omit = [
     "*/tests/*",
 ]
