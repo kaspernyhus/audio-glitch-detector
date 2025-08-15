@@ -1,21 +1,29 @@
-[tool.poetry]
+[project]
 name = "discontinuity-detector"
 version = "0.1.0"
 description = "Detect discontinuity in sinusoidal audio signals by looking at the first derivative"
-authors = ["Kasper Nyhus <kanyhus@gmail.com>"]
+authors = [
+    {name = "Kasper Nyhus", email = "kanyhus@gmail.com"}
+]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.2.2",
+    "pyaudio>=0.2.14",
+    "soundfile>=0.13.0",
+    "tqdm>=4.67.1",
+    "rich>=13.9.4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-numpy = "^2.2.2"
-pyaudio = "^0.2.14"
-soundfile = "^0.13.0"
-tqdm = "^4.67.1"
-rich = "^13.9.4"
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+]
 
-[tool.poetry.scripts]
+[project.scripts]
 detect = "discontinuity_detector.cli:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

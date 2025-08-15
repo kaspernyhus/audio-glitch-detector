@@ -5,38 +5,39 @@ Detect discontinuity in audio signals by looking at the first derivative. Only w
 - .wav file
 - audio stream
 
-## Setup using poetry
-Optional:
+## Setup using uv
+Install dependencies:
 ```
-poetry config virtualenvs.in-project true
-```
-Install dependencies
-```
-poetry install
+uv sync --dev
 ```
 
 ## See options
 ```
-poetry run detect -h
+uv run detect -h
 ```
 
 ## How to use
 ### Detect discontinuities in a .wav file
 ```
-poetry run detect -f /path/to/file
+uv run detect -f /path/to/file
 ```
 
 ### Detect discontinuities in an audio stream
 ```
-poetry run detect
+uv run detect
 ```
 Select audio device
 
+## Development
+### Install development dependencies
+```
+uv sync --dev
+```
 
 ## Test files
 the folder `test_files/` contains files of sine tones with a known number of discontinuities
 ```
-poetry run detect -f test_files/sine_discont_2_mono.wav
+uv run detect -f test_files/sine_discont_2_mono.wav
 ```
 
 Outputs
