@@ -42,7 +42,11 @@ def main():
         help="Number of samples to process",
     )
     parser.add_argument(
-        "-s", "--save_blocks", required=False, default=False, help="Save erroneous audio blocks as .wav files"
+        "-s",
+        "--save_blocks",
+        required=False,
+        default=False,
+        help="Save erroneous audio blocks as .wav files",
     )
     parser.add_argument("-f", "--filename", required=False, help="wave file to analyze")
 
@@ -78,7 +82,9 @@ def main():
             exit(1)
 
         detector = DiscontinuityDetectorStream(
-            AudioFormat(FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size),
+            AudioFormat(
+                FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size
+            ),
             device_id=device_id,
             save_blocks=save_blocks,
             detection_threshold=threshold,
@@ -87,9 +93,13 @@ def main():
         rich = RichOutput()
         rich.header("Audio Discontinuity Detector")
 
-        t = detector.open(count_discontinuities=count_discontinuities, exit_event=exit_event)
+        t = detector.open(
+            count_discontinuities=count_discontinuities, exit_event=exit_event
+        )
 
-        rich.live_output_start(exit_event=exit_event, get_meter_data=detector.get_meter_data)
+        rich.live_output_start(
+            exit_event=exit_event, get_meter_data=detector.get_meter_data
+        )
 
         detector.start()
         rich.log("Audio processing started")
@@ -98,7 +108,10 @@ def main():
         t.join()
 
         rich.log("Audio processing stopped")
-        rich.log(f"Total discontinuities detected: {count} in {rich.get_elapsed_time()}", style="bold red")
+        rich.log(
+            f"Total discontinuities detected: {count} in {rich.get_elapsed_time()}",
+            style="bold red",
+        )
 
 
 if __name__ == "__main__":

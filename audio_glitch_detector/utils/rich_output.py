@@ -69,11 +69,15 @@ class RichOutput:
         table = Table.grid(expand=True)
         table.add_column(justify="left", ratio=1)
         table.add_column(justify="right", ratio=1)
-        table.add_row(f"{self.vol[0]:.2f}dB\n{self.vol[1]:.2f}dB", f"{self.get_elapsed_time()}")
+        table.add_row(
+            f"{self.vol[0]:.2f}dB\n{self.vol[1]:.2f}dB", f"{self.get_elapsed_time()}"
+        )
         return Panel(table, title="Volume", style="bold white")
 
     def _run_live_output(self, exit_event: Event) -> None:
-        with Live(self._update_output(), console=self.console, auto_refresh=False) as live:
+        with Live(
+            self._update_output(), console=self.console, auto_refresh=False
+        ) as live:
             while True:
                 self.calc_elapsed_time()
                 if self.get_meter_data:
@@ -85,7 +89,9 @@ class RichOutput:
                     break
                 time.sleep(0.1)
 
-    def live_output_start(self, exit_event: Event, get_meter_data: Callable = None) -> None:
+    def live_output_start(
+        self, exit_event: Event, get_meter_data: Callable = None
+    ) -> None:
         self.get_meter_data = get_meter_data
         thread = Thread(target=self._run_live_output, args=(exit_event,))
         thread.start()

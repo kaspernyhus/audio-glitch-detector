@@ -4,11 +4,24 @@ from threading import Event, Thread
 from typing import Callable
 from audio_glitch_detector.utils.audio_format import AudioFormat
 from audio_glitch_detector.utils import utils, audio_meter
-from audio_glitch_detector.utils.dsp import calc_abs_derivative, normalize_data, split_channels, get_samples_from_block, convert_to_float
+from audio_glitch_detector.utils.dsp import (
+    calc_abs_derivative,
+    normalize_data,
+    split_channels,
+    get_samples_from_block,
+    convert_to_float,
+)
 
 
 class DiscontinuityDetectorStream:
-    def __init__(self, format: AudioFormat, device_id=None, detection_threshold: float = 0.1, save_blocks: bool = False, signal_threshold: float = -40.0) -> None:
+    def __init__(
+        self,
+        format: AudioFormat,
+        device_id=None,
+        detection_threshold: float = 0.1,
+        save_blocks: bool = False,
+        signal_threshold: float = -40.0,
+    ) -> None:
         self.device_id = device_id
         self.detection_threshold = detection_threshold
         self.p = pyaudio.PyAudio()
@@ -23,16 +36,18 @@ class DiscontinuityDetectorStream:
     def _process_audio_data(self, data):
         # Convert raw bytes to NumPy array
         samples = get_samples_from_block(
-            block=data, channels=self.AudioFormat.CHANNELS, bit_depth=self.AudioFormat.FORMAT
+            block=data,
+            channels=self.AudioFormat.CHANNELS,
+            bit_depth=self.AudioFormat.FORMAT,
         )
         samples = split_channels(samples, self.AudioFormat.CHANNELS)
         samples = convert_to_float(samples)
-        
+
         # If signal level is below threshold, ignore
         self.meter.update(samples)
         if all(peak < self.signal_threshold for peak in self.meter.get_peak()):
             return 0
-        
+
         samples = normalize_data(samples)
 
         abs_deriv = calc_abs_derivative(samples)
@@ -47,7 +62,9 @@ class DiscontinuityDetectorStream:
 
         return num_discont
 
-    def _run(self, exit_event: Event, count_discontinuities: Callable[[int], None]) -> None:
+    def _run(
+        self, exit_event: Event, count_discontinuities: Callable[[int], None]
+    ) -> None:
         try:
             while True:
                 if exit_event.is_set():
@@ -90,7 +107,9 @@ class DiscontinuityDetectorStream:
     def open(self, count_discontinuities: Callable[[int], None], exit_event: Event):
         """Start the audio stream and process the data in realtime"""
         self._open_stream()
-        audio_thread = Thread(target=self._run, args=(exit_event, count_discontinuities))
+        audio_thread = Thread(
+            target=self._run, args=(exit_event, count_discontinuities)
+        )
         audio_thread.start()
         return audio_thread
 

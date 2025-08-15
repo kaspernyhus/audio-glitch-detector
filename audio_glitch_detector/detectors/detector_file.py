@@ -64,7 +64,9 @@ class DiscontinuityDetectorFile:
 
         try:
             with tqdm(total=block_count, desc="Processing", unit="block") as pbar:
-                for block in sf.blocks(self.file_path, blocksize=self.blocksize, overlap=self.overlap):
+                for block in sf.blocks(
+                    self.file_path, blocksize=self.blocksize, overlap=self.overlap
+                ):
                     self._process_block(block)
                     pbar.update(1)  # Update the progress bar by one block
         except Exception as e:
