@@ -14,12 +14,12 @@ dependencies = [
     "soundfile>=0.13.0",
     "tqdm>=4.67.1",
     "rich>=13.9.4",
+    "matplotlib>=3.5.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
-    "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
 ]
 

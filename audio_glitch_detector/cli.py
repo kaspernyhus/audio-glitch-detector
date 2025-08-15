@@ -1,116 +1,206 @@
 import argparse
+import math
 import signal
+import sys
 from threading import Event
-from time import sleep
 
-from audio_glitch_detector.detectors.detector_file import DiscontinuityDetectorFile
-from audio_glitch_detector.detectors.detector_stream import DiscontinuityDetectorStream
-from audio_glitch_detector.utils.audio_devices import list_audio_devices
-from audio_glitch_detector.utils.audio_format import AudioBits, AudioFormat
-from audio_glitch_detector.utils.rich_output import RichOutput
+from tqdm import tqdm
 
-exit_event = Event()
-count = 0
+from . import __version__
+from .audio import AudioConfig, FileReader, StreamReader, print_audio_devices, save_glitch_block
+from .core import GlitchDetector
+from .tui import ConsoleOutput
+from .utils import format_time_string
 
 
-def signal_handler(sig, frame):
-    exit_event.set()
-
-
-def main():
-    signal.signal(signal.SIGINT, signal_handler)
-
-    def count_discontinuities(new_count: int):
-        global count
-        count += new_count
-        rich.log(f"Discontinuity detected. Total {count}")
-
-    parser = argparse.ArgumentParser()
+def create_parser() -> argparse.ArgumentParser:
+    """Create and configure argument parser."""
+    parser = argparse.ArgumentParser(description="Detect audio glitches and discontinuities in sinusoidal signals")
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"audio-glitch-detector {__version__}",
+    )
     parser.add_argument(
         "-t",
         "--threshold",
-        default=0.1,
-        required=False,
-        help="discontinuity detection threshold (>0.06)",
+        type=float,
+        default=0.12,
+        help="discontinuity detection threshold",
     )
     parser.add_argument(
-        "--chunk_size",
+        "-f",
+        "--filename",
+        help="Audio file to analyze",
+    )
+    parser.add_argument(
+        "-r",
+        "--sample_rate",
         type=int,
-        required=False,
-        default=640,
-        help="Number of samples to process",
+        default=48000,
+        help="Sample rate for stream mode (default: 48000)",
+    )
+    parser.add_argument(
+        "-c",
+        "--channels",
+        type=int,
+        default=2,
+        choices=[1, 2],
+        help="Number of channels for stream mode (default: 2)",
+    )
+    parser.add_argument(
+        "--bit_depth",
+        type=int,
+        default=32,
+        choices=[16, 32],
+        help="Bit depth for stream mode (default: 32)",
+    )
+    parser.add_argument(
+        "--block-size",
+        type=int,
+        default=1024,
+        help="Block size for file processing (default: 1024)",
     )
     parser.add_argument(
         "-s",
-        "--save_blocks",
-        required=False,
-        default=False,
-        help="Save erroneous audio blocks as .wav files",
+        "--save-blocks",
+        action="store_true",
+        help="Save audio blocks containing glitches as .wav files (default: off)",
     )
-    parser.add_argument("-f", "--filename", required=False, help="wave file to analyze")
+    return parser
 
-    args = parser.parse_args()
+
+def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks: bool, output: ConsoleOutput) -> None:
+    """Run glitch detection on a file using block-based processing with block overlap."""
+    try:
+        with FileReader(filename, block_size=1, overlap=0) as temp_reader:
+            sample_rate = temp_reader.sample_rate
+            channels = temp_reader.channels
+            duration = temp_reader.duration_seconds
+            total_frames = temp_reader.frames
+
+        overlap = int(block_size / 10)
+
+        output.log(f"Analyzing file: {filename}")
+        output.log(f"Sample rate: {sample_rate} Hz")
+        output.log(f"Channels: {channels}")
+        output.log(f"Duration: {duration:.2f} seconds")
+        output.log(f"Block size: {block_size} samples")
+        output.log(f"Overlap: {overlap} samples")
+
+        total_block_count = math.ceil(total_frames / (block_size - overlap))
+
+        with FileReader(filename, block_size=block_size, overlap=overlap) as reader:
+            detector = GlitchDetector(reader.sample_rate, threshold)
+
+            all_glitch_indices = []
+            all_glitch_timestamps = []
+
+            # Process blocks with progress bar
+            with tqdm(total=total_block_count, desc="Processing", unit="block") as pbar:
+                for samples, frame_offset in reader.read_blocks():
+                    result = detector.detect_with_offset(samples, frame_offset)
+
+                    all_glitch_indices.extend(result.sample_indices)
+                    all_glitch_timestamps.extend(result.timestamps_ms)
+
+                    if save_blocks and result.total_count > 0:
+                        save_glitch_block(samples, reader.sample_rate, frame_offset, threshold)
+
+                    pbar.update(1)
+
+            unique_indices = sorted(set(all_glitch_indices))
+            unique_timestamps = [format_time_string(detector._sample_to_milliseconds(idx)) for idx in unique_indices]
+
+            output.print_results(len(unique_indices), unique_timestamps)
+
+    except Exception as e:
+        output.log(f"Error processing file: {e}", style="bold red")
+        sys.exit(1)
+
+
+def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, output: ConsoleOutput) -> None:
+    """Run real-time glitch detection on audio stream."""
+    exit_event = Event()
+    glitch_count = 0
+
+    def signal_handler(sig, frame):
+        exit_event.set()
+
+    def glitch_callback(samples, frame_number):
+        nonlocal glitch_count
+        detector = GlitchDetector(config.sample_rate, threshold)
+        result = detector.detect_with_offset(samples, frame_number)
+
+        if result.total_count > 0:
+            glitch_count += result.total_count
+            output.log(f"Glitch detected! Total: {glitch_count}")
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+    # Get audio device
+    output.console.print("\nSelect audio device")
+    print_audio_devices()
 
     try:
-        threshold = float(args.threshold)
-    except ValueError:
-        print("Threshold must be a number")
-        exit(1)
+        device_input = input("Device ID: ")
+        device_id = int(device_input)
+    except (ValueError, KeyboardInterrupt):
+        output.log("Invalid device ID or cancelled", style="bold red")
+        return
 
-    save_blocks = args.save_blocks
-    chunk_size = args.chunk_size
-    filename = args.filename
+    # Start streaming
+    try:
+        with StreamReader(config, device_id) as stream:
+            stream.save_blocks = save_blocks
 
-    if filename:
-        stream_mode = False
+            output.print_header("Audio Glitch Detector")
+            output.reset_timer()
+
+            # Start monitoring
+            thread = stream.start_monitoring(glitch_callback, exit_event)
+
+            # Start live output
+            output.start_live_output(exit_event, lambda: stream.get_volume_db())
+            output.log("Audio processing started")
+
+            # Wait for completion
+            thread.join()
+
+            # Final summary
+            output.stop_live_output()
+            output.print_summary(glitch_count, output.get_elapsed_time())
+
+    except Exception as e:
+        output.log(f"Stream error: {e}", style="bold red")
+        sys.exit(1)
+
+
+def main() -> None:
+    """Main CLI entry point."""
+    parser = create_parser()
+    args = parser.parse_args()
+
+    output = ConsoleOutput()
+
+    if args.filename:
+        run_file_mode(args.filename, args.threshold, args.block_size, args.save_blocks, output)
     else:
-        stream_mode = True
+        config = AudioConfig(
+            sample_rate=args.sample_rate,
+            channels=args.channels,
+            bit_depth=args.bit_depth,
+            block_size=args.block_size,
+        )
 
-    if not stream_mode:
-        with DiscontinuityDetectorFile(filename, threshold) as detector:
-            detector.process_file()
-            detector.show_results()
-    else:
-        print("\nSelect audio device")
-        list_audio_devices()
-        device = input("Device ID: ")
         try:
-            device_id = int(device)
-        except ValueError:
-            print("Invalid device id")
-            exit(1)
+            config.validate()
+        except ValueError as e:
+            output.log(f"Invalid configuration: {e}", style="bold red")
+            sys.exit(1)
 
-        detector = DiscontinuityDetectorStream(
-            AudioFormat(
-                FORMAT=AudioBits.FORMAT_32LE, CHANNELS=2, RATE=48000, CHUNK=chunk_size
-            ),
-            device_id=device_id,
-            save_blocks=save_blocks,
-            detection_threshold=threshold,
-        )
-
-        rich = RichOutput()
-        rich.header("Audio Discontinuity Detector")
-
-        t = detector.open(
-            count_discontinuities=count_discontinuities, exit_event=exit_event
-        )
-
-        rich.live_output_start(
-            exit_event=exit_event, get_meter_data=detector.get_meter_data
-        )
-
-        detector.start()
-        rich.log("Audio processing started")
-        sleep(0.1)
-
-        t.join()
-
-        rich.log("Audio processing stopped")
-        rich.log(
-            f"Total discontinuities detected: {count} in {rich.get_elapsed_time()}",
-            style="bold red",
-        )
+        run_stream_mode(config, args.threshold, args.save_blocks, output)
 
 
 if __name__ == "__main__":

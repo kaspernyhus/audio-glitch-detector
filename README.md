@@ -36,6 +36,11 @@ Select audio device
 uv sync --dev
 ```
 
+### Run tests
+```
+uv run pytest
+```
+
 ## Test files
 the folder `test_files/` contains files of sine tones with a known number of discontinuities
 ```
@@ -48,3 +53,6 @@ Number of discontinuities detected:  2
 0:00:01.892857
 0:00:03.288367
 ```
+
+### Detection limitations
+`sine_subtle_error_stereo.wav` contains a errors which are harder for the algorithm to detect. Lovering the threshold to `0.5` will detect the discontinuities.
