@@ -4,7 +4,13 @@ from threading import Event
 
 from tqdm import tqdm
 
-from .audio import AudioConfig, BoundedGlitchQueue, StreamReader, print_audio_devices, save_glitch_block
+from .audio import (
+    AudioConfig,
+    BoundedGlitchQueue,
+    StreamReader,
+    print_audio_devices,
+    save_glitch_block,
+)
 from .core import GlitchDetector
 from .tui import ConsoleOutput
 
