@@ -63,7 +63,12 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
 
         if result.total_count > 0:
             glitch_count += result.total_count
-            output.log(f"Glitch detected! Total: {glitch_count}")
+            if result.auto_threshold:
+                auto_threshold_str = f" (threshold: {result.threshold:.2f})"
+            else:
+                auto_threshold_str = ""
+
+            output.log(f"Glitch detected!{auto_threshold_str} Total: {glitch_count}", style="bold red")
 
             if save_blocks and glitch_queue:
                 glitch_queue.add_block(samples, config.sample_rate, frame_number, threshold)
@@ -75,8 +80,8 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
             output.log(f"Analyzing audio stream from device id: {device_id}")
             output.log(f"Sample rate: {config.sample_rate} Hz")
             output.log(f"Channels: {config.channels}")
-            output.log(f"Detection threshold: {threshold}")
             output.log(f"Block size: {config.block_size} frames")
+            output.log(f"Detection threshold: {threshold if threshold > 0 else 'auto'}")
 
             # Start monitoring
             thread = stream.start_monitoring(glitch_callback, exit_event)

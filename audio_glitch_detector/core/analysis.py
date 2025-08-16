@@ -32,6 +32,36 @@ def find_glitch_indices(derivative: np.ndarray, threshold: float = 0.5) -> list[
     return discontinuities
 
 
+def find_optimal_threshold(samples: np.ndarray, percentile: float = 99.5) -> float:
+    """
+    Automatically determine optimal threshold by analyzing derivative distribution.
+    """
+    if samples.ndim == 1:
+        samples = samples.reshape(1, -1)
+
+    derivative = calculate_derivative(samples)
+    all_derivatives = derivative.flatten()
+
+    # Remove zeros and very small values that are just noise
+    non_zero_derivatives = all_derivatives[all_derivatives > 1e-6]
+
+    if len(non_zero_derivatives) == 0:
+        return 0.1
+
+    base_threshold = np.percentile(non_zero_derivatives, percentile)
+
+    min_threshold = 0.05
+
+    multiplier = 1.2
+
+    threshold = max(base_threshold * multiplier, min_threshold)
+
+    max_threshold = 0.5
+    threshold = min(threshold, max_threshold)
+
+    return float(threshold)
+
+
 def filter_nearby_glitches(discontinuities: list[int], window: int = 10) -> list[int]:
     """Filter out glitch detections that are too close together within a sample window."""
     if not discontinuities:

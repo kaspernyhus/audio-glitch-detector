@@ -2,7 +2,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .analysis import calculate_derivative, filter_nearby_glitches, find_glitch_indices
+from .analysis import (
+    calculate_derivative,
+    filter_nearby_glitches,
+    find_glitch_indices,
+    find_optimal_threshold,
+)
 
 
 @dataclass
@@ -12,6 +17,8 @@ class DetectionResult:
     sample_indices: list[int]
     timestamps_ms: list[float]
     total_count: int
+    threshold: float
+    auto_threshold: bool = False
 
 
 class GlitchDetector:
@@ -22,13 +29,19 @@ class GlitchDetector:
     Threshold should be set so it filters out minor fluctuations that are not considered glitches.
     """
 
-    def __init__(self, sample_rate: int, threshold: float = 0.1):
+    def __init__(self, sample_rate: int, threshold: float = 0.0):
         self.sample_rate = sample_rate
         self.threshold = threshold
+        self.auto_threshold = False
 
     def detect(self, samples: np.ndarray) -> DetectionResult:
         """Detect glitches in audio samples."""
+        if self.threshold == 0.0:
+            self.auto_threshold = True
+            self.threshold = find_optimal_threshold(samples)
+
         derivative = calculate_derivative(samples)
+
         discontinuities_per_channel = find_glitch_indices(derivative, self.threshold)
 
         # Combine all channels and remove duplicates
@@ -43,6 +56,8 @@ class GlitchDetector:
             sample_indices=filtered_discontinuities,
             timestamps_ms=timestamps,
             total_count=len(filtered_discontinuities),
+            threshold=self.threshold,
+            auto_threshold=self.auto_threshold,
         )
 
     def detect_with_offset(self, samples: np.ndarray, frame_offset: int) -> DetectionResult:
@@ -57,6 +72,8 @@ class GlitchDetector:
             sample_indices=absolute_indices,
             timestamps_ms=absolute_timestamps,
             total_count=result.total_count,
+            threshold=result.threshold,
+            auto_threshold=result.auto_threshold,
         )
 
     def _sample_to_milliseconds(self, sample_index: int) -> float:

@@ -27,7 +27,7 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
         output.log(f"Duration: {duration:.2f} seconds")
         output.log(f"Block size: {block_size} frames")
         output.log(f"Overlap: {overlap} samples")
-        output.log(f"Detection threshold: {threshold}")
+        output.log(f"Detection threshold: {threshold if threshold > 0 else 'auto'}")
 
         total_block_count = math.ceil(total_frames / (block_size - overlap))
 
@@ -47,7 +47,7 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
 
                     # Store block for later saving if glitches detected
                     if save_blocks and glitch_queue and result.total_count > 0:
-                        glitch_queue.add_block(samples, reader.sample_rate, frame_offset, threshold)
+                        glitch_queue.add_block(samples, reader.sample_rate, frame_offset, result.threshold)
 
                     pbar.update(1)
 

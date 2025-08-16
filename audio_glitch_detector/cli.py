@@ -18,13 +18,6 @@ def create_parser() -> argparse.ArgumentParser:
         version=f"audio-glitch-detector {__version__}",
     )
     parser.add_argument(
-        "-t",
-        "--threshold",
-        type=float,
-        default=0.12,
-        help="discontinuity detection threshold",
-    )
-    parser.add_argument(
         "-f",
         "--filename",
         help="Audio file to analyze",
@@ -56,6 +49,13 @@ def create_parser() -> argparse.ArgumentParser:
         type=int,
         default=1024,
         help="Block size (frames) for processing (default: 1024)",
+    )
+    parser.add_argument(
+        "-t",
+        "--threshold",
+        type=float,
+        default=0.0,
+        help="discontinuity detection threshold. 0 = auto. (default: auto)",
     )
     parser.add_argument(
         "-s",

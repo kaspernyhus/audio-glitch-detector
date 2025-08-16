@@ -30,7 +30,7 @@ class TestFileDetection:
             pytest.skip(f"Test file {filename} not found")
 
         with FileReader(str(filepath), 1024) as reader:
-            detector = GlitchDetector(reader.sample_rate, threshold=0.12)
+            detector = GlitchDetector(reader.sample_rate)
 
             # Process entire file at once for this test
             samples = reader.read_all()
@@ -48,19 +48,18 @@ class TestFileDetection:
         if not filepath.exists():
             pytest.skip("Test file sine_discont_2_mono.wav not found")
 
-        threshold = 0.12
         block_size = 1024
         overlap = 100
 
         # Full file detection
         with FileReader(str(filepath), 1024) as reader:
-            detector = GlitchDetector(reader.sample_rate, threshold)
+            detector = GlitchDetector(reader.sample_rate)
             samples = reader.read_all()
             full_result = detector.detect(samples)
 
         # Block-based detection
         with FileReader(str(filepath), block_size=block_size, overlap=overlap) as reader:
-            detector = GlitchDetector(reader.sample_rate, threshold)
+            detector = GlitchDetector(reader.sample_rate)
 
             all_glitch_indices = []
             for samples, frame_offset in reader.read_blocks():
