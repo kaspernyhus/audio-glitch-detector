@@ -24,6 +24,7 @@ Stream analysis:
         # Use stream.start_monitoring() for real-time detection
 """
 
+# Core detection classes - the main library API
 from .core import DetectionResult, GlitchDetector
 
 __version__ = "0.1.0"
