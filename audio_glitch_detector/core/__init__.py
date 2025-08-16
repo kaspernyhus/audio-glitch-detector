@@ -1,11 +1,11 @@
 from .analysis import (
     calculate_derivative,
-    to_float,
-    find_glitch_indices,
-    normalize_samples,
     filter_nearby_glitches,
+    find_glitch_indices,
     from_bytes,
+    normalize_samples,
     split_channels,
+    to_float,
 )
 from .detector import DetectionResult, GlitchDetector
 

@@ -76,7 +76,7 @@ class ConsoleOutput:
         table.add_row(volume_text, time_text)
         table.add_row("", "")  # Empty row for spacing
         table.add_row(Text("Ctrl-C to quit", style="dim"), "")
-        
+
         return Panel(table, title="Volume", style="bold white")
 
     def _live_output_loop(self, exit_event: Event, volume_callback: Callable[[], list[float]]) -> None:
