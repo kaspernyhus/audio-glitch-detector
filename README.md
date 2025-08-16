@@ -30,7 +30,30 @@ uv run audio-glitch-detector
 ```
 Select audio device
 
+### Save glitch blocks for analysis
+Use the `--save-blocks` flag to save audio blocks containing detected glitches as both WAV files and PNG waveform visualizations:
+
+The PNG files show the waveform with derivative analysis.
+
+![Glitch Block Visualization](docs/glitch_block_00183478_4160ms.png)
+
+## Test files
+the folder `test_files/` contains files of sine tones with a known number of discontinuities
+```
+uv run audio-glitch-detector -f test_files/sine_discont_2_mono.wav
+```
+Outputs
+```
+Number of discontinuities detected:  2
+0:00:01.892857
+0:00:03.288367
+```
+
+### Detection limitations
+`sine_subtle_error_stereo.wav` contains a errors which are harder for the algorithm to detect. Lowering the threshold to `0.1` will detect the discontinuities. A too low threshold will result in false positives - and a lot of them...
+
 ## Development
+
 ### Install development dependencies
 ```
 uv sync --dev
@@ -40,19 +63,3 @@ uv sync --dev
 ```
 uv run pytest
 ```
-
-## Test files
-the folder `test_files/` contains files of sine tones with a known number of discontinuities
-```
-uv run audio-glitch-detector -f test_files/sine_discont_2_mono.wav
-```
-
-Outputs
-```
-Number of discontinuities detected:  2
-0:00:01.892857
-0:00:03.288367
-```
-
-### Detection limitations
-`sine_subtle_error_stereo.wav` contains a errors which are harder for the algorithm to detect. Lovering the threshold to `0.5` will detect the discontinuities.
