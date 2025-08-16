@@ -76,7 +76,7 @@ class StreamReader:
             rate=self.config.sample_rate,
             input_device_index=self.device_id,
             input=True,
-            frames_per_buffer=int(self.config.block_size / self.config.channels),
+            frames_per_buffer=int(self.config.block_size),
         )
 
     def close(self) -> None:

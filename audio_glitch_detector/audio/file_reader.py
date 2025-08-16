@@ -8,7 +8,7 @@ import soundfile as sf
 class FileReader:
     """Reads audio files and provides samples for glitch detection."""
 
-    def __init__(self, file_path: str, block_size: int | None = None, overlap: int = 0):
+    def __init__(self, file_path: str, block_size: int, overlap: int = 0):
         self.file_path = Path(file_path)
         self._file: sf.SoundFile | None = None
         self._info: sf._SoundFileInfo | None = None
@@ -20,9 +20,6 @@ class FileReader:
         try:
             self._file = sf.SoundFile(str(self.file_path))
             self._info = sf.info(str(self.file_path))
-
-            if self.block_size is None:
-                self.block_size = self._info.samplerate
 
             if self.overlap == 0:
                 self.overlap = int(self._info.samplerate / 1000)  # 1ms default
@@ -82,9 +79,7 @@ class FileReader:
 
         current_frame = 0
 
-        for block in sf.blocks(
-            str(self.file_path), blocksize=self.block_size, overlap=self.overlap
-        ):
+        for block in sf.blocks(str(self.file_path), blocksize=self.block_size, overlap=self.overlap):
             if self.channels == 1:
                 samples = block.reshape(1, -1)
             else:

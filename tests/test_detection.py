@@ -29,7 +29,7 @@ class TestFileDetection:
         if not filepath.exists():
             pytest.skip(f"Test file {filename} not found")
 
-        with FileReader(str(filepath)) as reader:
+        with FileReader(str(filepath), 1024) as reader:
             detector = GlitchDetector(reader.sample_rate, threshold=0.12)
 
             # Process entire file at once for this test
@@ -53,7 +53,7 @@ class TestFileDetection:
         overlap = 100
 
         # Full file detection
-        with FileReader(str(filepath)) as reader:
+        with FileReader(str(filepath), 1024) as reader:
             detector = GlitchDetector(reader.sample_rate, threshold)
             samples = reader.read_all()
             full_result = detector.detect(samples)
