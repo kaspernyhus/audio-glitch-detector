@@ -75,8 +75,8 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
             output.log(f"Analyzing audio stream from device id: {device_id}")
             output.log(f"Sample rate: {config.sample_rate} Hz")
             output.log(f"Channels: {config.channels}")
-            output.log(f"Block size: {config.block_size} samples")
             output.log(f"Detection threshold: {threshold}")
+            output.log(f"Block size: {config.block_size} frames")
 
             # Start monitoring
             thread = stream.start_monitoring(glitch_callback, exit_event)

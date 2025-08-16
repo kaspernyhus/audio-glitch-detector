@@ -55,7 +55,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--block-size",
         type=int,
         default=1024,
-        help="Block size for file processing (default: 1024)",
+        help="Block size (frames) for processing (default: 1024)",
     )
     parser.add_argument(
         "-s",

@@ -7,7 +7,7 @@ class TestFileReader:
     def test_context_manager(self, test_files_dir):
         file_path = test_files_dir / "sine_discont_2_mono.wav"
 
-        with FileReader(str(file_path)) as reader:
+        with FileReader(str(file_path), 1024) as reader:
             assert reader._file is not None
             assert reader._info is not None
 
@@ -17,7 +17,7 @@ class TestFileReader:
     def test_file_properties(self, test_files_dir):
         file_path = test_files_dir / "sine_discont_2_mono.wav"
 
-        with FileReader(str(file_path)) as reader:
+        with FileReader(str(file_path), 1024) as reader:
             assert reader.sample_rate > 0
             assert reader.channels > 0
             assert reader.frames > 0
@@ -26,7 +26,7 @@ class TestFileReader:
     def test_mono_file_reading(self, test_files_dir):
         file_path = test_files_dir / "sine_discont_2_mono.wav"
 
-        with FileReader(str(file_path)) as reader:
+        with FileReader(str(file_path), 1024) as reader:
             assert reader.channels == 1
             samples = reader.read_all()
             assert samples.shape[0] == 1  # Should have 1 channel
@@ -35,7 +35,7 @@ class TestFileReader:
     def test_stereo_file_reading(self, test_files_dir):
         file_path = test_files_dir / "sine_discont_2_stereo.wav"
 
-        with FileReader(str(file_path)) as reader:
+        with FileReader(str(file_path), 1024) as reader:
             assert reader.channels == 2
             samples = reader.read_all()
             assert samples.shape[0] == 2  # Should have 2 channels
@@ -55,12 +55,12 @@ class TestFileReader:
 
     def test_file_not_found(self):
         with pytest.raises(IOError):
-            with FileReader("nonexistent_file.wav") as reader:
+            with FileReader("nonexistent_file.wav", 1024) as reader:
                 pass
 
     def test_runtime_error_when_not_opened(self, test_files_dir):
         file_path = test_files_dir / "sine_discont_2_mono.wav"
-        reader = FileReader(str(file_path))
+        reader = FileReader(str(file_path), 1024)
 
         with pytest.raises(RuntimeError):
             reader.sample_rate
