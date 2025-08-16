@@ -1,3 +1,4 @@
+import math
 import time
 from collections.abc import Callable
 from threading import Event, Thread
@@ -35,14 +36,12 @@ class VolumeMeter:
 
     def get_peak_db(self) -> list[float]:
         """Get peak levels in dB and reset."""
-        import math
-
-        for i in range(2):
-            if self.peak_raw[i] > 0.0:
-                self.peak_db[i] = 20.0 * math.log10(self.peak_raw[i])
+        for channel in range(2):
+            if self.peak_raw[channel] > 0.0:
+                self.peak_db[channel] = 20.0 * math.log10(self.peak_raw[channel])
             else:
-                self.peak_db[i] = -120.0  # Silence floor
-            self.peak_raw[i] = 0.0
+                self.peak_db[channel] = -120.0  # Silence floor
+            self.peak_raw[channel] = 0.0
 
         return self.peak_db.copy()
 
@@ -66,8 +65,6 @@ class StreamReader:
         self._thread: Thread | None = None
 
         self.volume_meter = VolumeMeter()
-        self.saved_blocks: list[bytes] = []
-        self.save_blocks = False
 
     def open(self) -> None:
         """Open the audio stream."""
@@ -126,19 +123,17 @@ class StreamReader:
                     continue
 
                 try:
-                    num_frames = int(self.config.block_size / self.config.channels)
+                    num_frames = int(self.config.block_size)
                     raw_data = self._stream.read(num_frames)
-                    samples = self._process_raw_data(raw_data)
-                    if samples is None:
-                        continue
+                    samples = from_bytes(raw_data, self.config.channels, self.config.bit_depth)
+                    samples = split_channels(samples, self.config.channels)
+                    samples = to_float(samples)
 
-                    print(f"Processing frame {frame_number}... {samples.size} samples")
+                    # Update volume meter
+                    self.volume_meter.update(samples)
 
                     callback(samples, frame_number)
                     frame_number += self.config.block_size
-
-                    if self.save_blocks:
-                        self.saved_blocks.append(raw_data)
 
                 except OSError as e:
                     print(f"Audio stream error: {e}")
@@ -171,10 +166,6 @@ class StreamReader:
     def get_volume_db(self) -> list[float]:
         """Get current volume levels in dB."""
         return self.volume_meter.get_peak_db()
-
-    def reset_saved_blocks(self) -> None:
-        """Clear saved audio blocks."""
-        self.saved_blocks.clear()
 
     def __enter__(self):
         """Context manager entry."""

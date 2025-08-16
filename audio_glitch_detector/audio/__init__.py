@@ -7,6 +7,7 @@ from .devices import (
     print_audio_devices,
 )
 from .file_reader import FileReader
+from .glitch_queue import BoundedGlitchQueue, GlitchBlock
 from .stream_reader import StreamReader, VolumeMeter
 
 __all__ = [
@@ -19,4 +20,6 @@ __all__ = [
     "print_audio_devices",
     "get_device_by_index",
     "save_glitch_block",
+    "BoundedGlitchQueue",
+    "GlitchBlock",
 ]

@@ -7,7 +7,7 @@ from threading import Event
 from tqdm import tqdm
 
 from . import __version__
-from .audio import AudioConfig, FileReader, StreamReader, print_audio_devices, save_glitch_block
+from .audio import AudioConfig, BoundedGlitchQueue, FileReader, StreamReader, print_audio_devices, save_glitch_block
 from .core import GlitchDetector
 from .tui import ConsoleOutput
 from .utils import format_time_string
@@ -88,6 +88,7 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
         output.log(f"Duration: {duration:.2f} seconds")
         output.log(f"Block size: {block_size} samples")
         output.log(f"Overlap: {overlap} samples")
+        output.log(f"Detection threshold: {threshold}")
 
         total_block_count = math.ceil(total_frames / (block_size - overlap))
 
@@ -124,6 +125,7 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
     """Run real-time glitch detection on audio stream."""
     exit_event = Event()
     glitch_count = 0
+    glitch_queue = BoundedGlitchQueue(max_size=50) if save_blocks else None
 
     def signal_handler(sig, frame):
         exit_event.set()
@@ -136,6 +138,8 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
         if result.total_count > 0:
             glitch_count += result.total_count
             output.log(f"Glitch detected! Total: {glitch_count}")
+            if save_blocks and glitch_queue:
+                glitch_queue.add_block(samples, config.sample_rate, frame_number, threshold)
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -150,27 +154,35 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
         output.log("Invalid device ID or cancelled", style="bold red")
         return
 
-    # Start streaming
     try:
         with StreamReader(config, device_id) as stream:
-            stream.save_blocks = save_blocks
-
-            output.print_header("Audio Glitch Detector")
+            output.print_header("Audio Glitch Detector Live")
             output.reset_timer()
+            output.log(f"Analyzing audio stream from device id: {device_id}")
+            output.log(f"Sample rate: {config.sample_rate} Hz")
+            output.log(f"Channels: {config.channels}")
+            output.log(f"Block size: {config.block_size} samples")
+            output.log(f"Detection threshold: {threshold}")
 
-            # Start monitoring
             thread = stream.start_monitoring(glitch_callback, exit_event)
-
-            # Start live output
             output.start_live_output(exit_event, lambda: stream.get_volume_db())
-            output.log("Audio processing started")
 
-            # Wait for completion
             thread.join()
 
-            # Final summary
             output.stop_live_output()
             output.print_summary(glitch_count, output.get_elapsed_time())
+
+            if save_blocks and glitch_queue and glitch_queue.count() > 0:
+                output.log(f"\nSaving {glitch_queue.count()} glitch blocks...", style="bold yellow")
+
+                with tqdm(total=glitch_queue.count(), desc="Saving blocks", unit="block") as pbar:
+                    for block in glitch_queue.get_all_blocks():
+                        save_glitch_block(block.samples, block.sample_rate, block.frame_offset, block.threshold)
+                        pbar.update(1)
+
+                output.log(
+                    f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder", style="bold green"
+                )
 
     except Exception as e:
         output.log(f"Stream error: {e}", style="bold red")

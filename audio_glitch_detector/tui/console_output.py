@@ -20,7 +20,6 @@ class ConsoleOutput:
         self.lock = Lock()
         self.running = False
         self.elapsed_time = "00:00:00"
-        self.volume_callback: Callable[[], list[float]] | None = None
         self.volume_levels = [0.0, 0.0]
 
     def print_header(self, title: str) -> None:
@@ -44,12 +43,11 @@ class ConsoleOutput:
     def start_live_output(
         self,
         exit_event: Event,
-        volume_callback: Callable[[], list[float]] | None = None,
+        volume_callback: Callable[[], list[float]],
     ) -> None:
         """Start live output display in background thread."""
-        self.volume_callback = volume_callback
         self.running = True
-        thread = Thread(target=self._live_output_loop, args=(exit_event,))
+        thread = Thread(target=self._live_output_loop, args=(exit_event, volume_callback))
         thread.start()
 
     def stop_live_output(self) -> None:
@@ -76,17 +74,17 @@ class ConsoleOutput:
         time_text = self.get_elapsed_time()
 
         table.add_row(volume_text, time_text)
+        table.add_row("", "")  # Empty row for spacing
+        table.add_row(Text("Ctrl-C to quit", style="dim"), "")
+        
         return Panel(table, title="Volume", style="bold white")
 
-    def _live_output_loop(self, exit_event: Event) -> None:
+    def _live_output_loop(self, exit_event: Event, volume_callback: Callable[[], list[float]]) -> None:
         """Main loop for live output display."""
         with Live(self._create_live_panel(), console=self.console, auto_refresh=False) as live:
             while self.running and not exit_event.is_set():
                 self._calculate_elapsed_time()
-
-                if self.volume_callback:
-                    self.volume_levels = self.volume_callback()
-
+                self.volume_levels = volume_callback()
                 live.update(self._create_live_panel())
                 live.refresh()
                 time.sleep(0.1)
