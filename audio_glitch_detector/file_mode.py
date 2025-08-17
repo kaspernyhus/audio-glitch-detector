@@ -18,6 +18,7 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
             channels = temp_reader.channels
             duration = temp_reader.duration_seconds
             total_frames = temp_reader.frames
+            bit_depth = temp_reader.bit_depth
 
         overlap = int(block_size / 10)
         glitch_queue = BoundedGlitchQueue(max_size=50) if save_blocks else None
@@ -25,6 +26,7 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
         output.log(f"Analyzing file: {filename}")
         output.log(f"Sample rate: {sample_rate} Hz")
         output.log(f"Channels: {channels}")
+        output.log(f"Bit depth: {bit_depth}")
         output.log(f"Duration: {duration:.2f} seconds")
         output.log(f"Block size: {block_size} frames")
         output.log(f"Overlap: {overlap} samples")

@@ -59,6 +59,13 @@ class FileReader:
         """Get duration in seconds."""
         return self.frames / self.sample_rate
 
+    @property
+    def bit_depth(self) -> str:
+        """Get bit depth information."""
+        if self._info is None:
+            raise RuntimeError("File not opened")
+        return self._info.subtype_info
+
     def read_all(self) -> np.ndarray:
         """Read entire file as samples. Return ndarray of samples with shape (channels, samples)"""
         if self._file is None:
