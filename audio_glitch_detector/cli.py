@@ -2,10 +2,6 @@ import argparse
 import sys
 from importlib.metadata import version
 
-try:
-    __version__ = version("audio-glitch-detector")
-except Exception:
-    __version__ = "unknown"
 from .audio import AudioConfig
 from .file_mode import run_file_mode
 from .stream_mode import run_stream_mode
@@ -19,7 +15,7 @@ def create_parser() -> argparse.ArgumentParser:
         "-v",
         "--version",
         action="version",
-        version=f"audio-glitch-detector {__version__}",
+        version=f"audio-glitch-detector {version('audio-glitch-detector')}",
     )
     parser.add_argument(
         "-f",
