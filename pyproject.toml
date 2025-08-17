@@ -8,19 +8,27 @@ authors = [
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.12"
+keywords = ["audio", "glitch", "detection", "signal-processing", "cli"]
 dependencies = [
-    "numpy>=2.2.2",
+    "numpy>=1.24.0",
     "pyaudio>=0.2.14",
-    "soundfile>=0.13.0",
-    "tqdm>=4.67.1",
-    "rich>=13.9.4",
+    "soundfile>=0.12.0",
+    "tqdm>=4.65.0",
+    "rich>=13.0.0",
     "matplotlib>=3.5.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/kaspernyhus/audio-glitch-detector"
+Repository = "https://github.com/kaspernyhus/audio-glitch-detector"
+Issues = "https://github.com/kaspernyhus/audio-glitch-detector/issues"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
     "ruff>=0.1.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
 ]
 
 [project.scripts]
@@ -29,48 +37,3 @@ audio-glitch-detector = "audio_glitch_detector.cli:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.ruff]
-target-version = "py312"
-line-length = 88
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-]
-ignore = [
-    "E501",  # line too long, handled by black
-]
-per-file-ignores = { "__init__.py" = ["F401"] }
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --strict-markers"
-testpaths = [
-    "tests",
-]
-
-[tool.coverage.run]
-source = ["audio_glitch_detector"]
-omit = [
-    "*/tests/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.4.1",
-]
