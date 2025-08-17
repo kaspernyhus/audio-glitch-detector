@@ -11,7 +11,10 @@ def calculate_derivative(samples: np.ndarray) -> np.ndarray:
     filter_kernel = np.array([-1, 1])
 
     for channel in range(num_channels):
+        # remove the last sample to match the length of the derivative
         derivative[channel] = np.abs(np.convolve(samples[channel], filter_kernel))[:-1]
+        # set the first sample to zero to avoid edge effects
+        derivative[channel][0] = 0
 
     return derivative
 
