@@ -10,7 +10,13 @@ from .tui import ConsoleOutput
 from .utils import format_time_string
 
 
-def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks: bool, output: ConsoleOutput) -> None:
+def run_file_mode(
+    filename: str,
+    threshold: float,
+    block_size: int,
+    save_blocks: bool,
+    output: ConsoleOutput,
+) -> None:
     """Run glitch detection on a file using block-based processing with block overlap."""
     try:
         with FileReader(filename, block_size=1, overlap=0) as temp_reader:
@@ -61,15 +67,24 @@ def run_file_mode(filename: str, threshold: float, block_size: int, save_blocks:
 
             # Process saved blocks if enabled
             if save_blocks and glitch_queue and glitch_queue.count() > 0:
-                output.log(f"\nSaving {glitch_queue.count()} glitch blocks...", style="bold yellow")
+                output.log(
+                    f"\nSaving {glitch_queue.count()} glitch blocks...",
+                    style="bold yellow",
+                )
 
                 with tqdm(total=glitch_queue.count(), desc="Saving blocks", unit="block") as pbar:
                     for block in glitch_queue.get_all_blocks():
-                        save_glitch_block(block.samples, block.sample_rate, block.frame_offset, block.threshold)
+                        save_glitch_block(
+                            block.samples,
+                            block.sample_rate,
+                            block.frame_offset,
+                            block.threshold,
+                        )
                         pbar.update(1)
 
                 output.log(
-                    f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder", style="bold green"
+                    f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder",
+                    style="bold green",
                 )
 
     except Exception as e:

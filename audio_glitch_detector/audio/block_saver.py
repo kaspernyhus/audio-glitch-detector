@@ -8,7 +8,11 @@ from ..core.analysis import calculate_derivative
 
 
 def save_waveform_png(
-    samples: np.ndarray, sample_rate: int, frame_offset: int, filepath: Path, threshold: float = 0.1
+    samples: np.ndarray,
+    sample_rate: int,
+    frame_offset: int,
+    filepath: Path,
+    threshold: float = 0.1,
 ) -> None:
     """Save waveform visualization with derivative analysis as PNG."""
     # Calculate derivative for analysis
@@ -34,7 +38,13 @@ def save_waveform_png(
         # Derivative
         plt.subplot(2, 1, 2)
         plt.plot(time_axis_deriv, derivative[0], "g-", linewidth=0.5)
-        plt.axhline(y=threshold, color="r", linestyle="--", linewidth=1, label=f"Threshold = {threshold}")
+        plt.axhline(
+            y=threshold,
+            color="r",
+            linestyle="--",
+            linewidth=1,
+            label=f"Threshold = {threshold}",
+        )
         plt.ylabel("Derivative")
         plt.xlabel("Time (ms)")
         plt.legend()
@@ -60,8 +70,20 @@ def save_waveform_png(
         # Combined derivative (max across channels for visualization)
         plt.subplot(3, 1, 3)
         combined_derivative = np.max(derivative, axis=0)
-        plt.plot(time_axis_deriv, combined_derivative, "g-", linewidth=0.5, label="Max derivative")
-        plt.axhline(y=threshold, color="r", linestyle="--", linewidth=1, label=f"Threshold = {threshold}")
+        plt.plot(
+            time_axis_deriv,
+            combined_derivative,
+            "g-",
+            linewidth=0.5,
+            label="Max derivative",
+        )
+        plt.axhline(
+            y=threshold,
+            color="r",
+            linestyle="--",
+            linewidth=1,
+            label=f"Threshold = {threshold}",
+        )
         plt.ylabel("Derivative")
         plt.xlabel("Time (ms)")
         plt.legend()
@@ -73,7 +95,11 @@ def save_waveform_png(
 
 
 def save_glitch_block(
-    samples: np.ndarray, sample_rate: int, frame_offset: int, threshold: float, output_dir: Path = None
+    samples: np.ndarray,
+    sample_rate: int,
+    frame_offset: int,
+    threshold: float,
+    output_dir: Path = None,
 ) -> None:
     """Save audio block containing glitch as WAV file and PNG waveform with derivative analysis."""
     if output_dir is None:

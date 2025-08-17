@@ -4,7 +4,12 @@ from threading import Event
 
 from tqdm import tqdm
 
-from .audio import AudioConfig, BoundedGlitchQueue, save_glitch_block, print_audio_devices
+from .audio import (
+    AudioConfig,
+    BoundedGlitchQueue,
+    save_glitch_block,
+    print_audio_devices,
+)
 from .readers import StreamReader
 from .core import GlitchDetector
 from .tui import ConsoleOutput
@@ -35,7 +40,10 @@ def process_saved_blocks(glitch_queue: BoundedGlitchQueue | None, output: Consol
             save_glitch_block(block.samples, block.sample_rate, block.frame_offset, block.threshold)
             pbar.update(1)
 
-    output.log(f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder", style="bold green")
+    output.log(
+        f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder",
+        style="bold green",
+    )
 
 
 def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, output: ConsoleOutput) -> None:
@@ -63,7 +71,10 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, ou
             else:
                 auto_threshold_str = ""
 
-            output.log(f"Glitch detected!{auto_threshold_str} Total: {glitch_count}", style="bold red")
+            output.log(
+                f"Glitch detected!{auto_threshold_str} Total: {glitch_count}",
+                style="bold red",
+            )
 
             if save_blocks and glitch_queue:
                 glitch_queue.add_block(samples, config.sample_rate, frame_number, threshold)

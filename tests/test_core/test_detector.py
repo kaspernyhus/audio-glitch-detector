@@ -1,4 +1,3 @@
-from threading import ThreadError
 from audio_glitch_detector.core.detector import DetectionResult, GlitchDetector
 
 
@@ -82,7 +81,10 @@ class TestDetectionResult:
         threshold = 0.1
 
         result = DetectionResult(
-            sample_indices=indices, timestamps_ms=timestamps, total_count=count, threshold=threshold
+            sample_indices=indices,
+            timestamps_ms=timestamps,
+            total_count=count,
+            threshold=threshold,
         )
 
         assert result.sample_indices == indices

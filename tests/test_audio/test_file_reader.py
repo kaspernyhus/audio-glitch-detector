@@ -55,7 +55,7 @@ class TestFileReader:
 
     def test_file_not_found(self):
         with pytest.raises(IOError):
-            with FileReader("nonexistent_file.wav", 1024) as reader:
+            with FileReader("nonexistent_file.wav", 1024) as _:
                 pass
 
     def test_runtime_error_when_not_opened(self, test_files_dir):
