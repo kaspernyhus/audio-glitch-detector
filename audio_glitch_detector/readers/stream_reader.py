@@ -12,7 +12,7 @@ from ..core.analysis import (
     split_channels,
     to_float,
 )
-from .config import AudioConfig
+from ..audio.config import AudioConfig
 
 
 class VolumeMeter:

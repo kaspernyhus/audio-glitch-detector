@@ -3,7 +3,8 @@ import sys
 
 from tqdm import tqdm
 
-from .audio import BoundedGlitchQueue, FileReader, save_glitch_block
+from .audio import BoundedGlitchQueue, save_glitch_block
+from .readers import FileReader
 from .core import GlitchDetector
 from .tui import ConsoleOutput
 from .utils import format_time_string

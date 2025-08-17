@@ -1,7 +1,11 @@
 import argparse
 import sys
+from importlib.metadata import version
 
-from . import __version__
+try:
+    __version__ = version("audio-glitch-detector")
+except Exception:
+    __version__ = "unknown"
 from .audio import AudioConfig
 from .file_mode import run_file_mode
 from .stream_mode import run_stream_mode

@@ -1,6 +1,6 @@
 import pytest
 
-from audio_glitch_detector.audio.file_reader import FileReader
+from audio_glitch_detector.readers.file_reader import FileReader
 
 
 class TestFileReader:
