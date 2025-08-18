@@ -80,10 +80,10 @@ def filter_nearby_glitches(discontinuities: list[int], window: int = 50) -> list
     return filtered
 
 
-def normalize_samples(samples: np.ndarray) -> np.ndarray:
-    """Normalize samples to range [-1.0, 1.0]."""
+def normalize_samples(samples: np.ndarray, noise_threshold: float = 0.005) -> np.ndarray:
+    """Normalize samples to range [-1.0, 1.0] only if signal is above noise threshold."""
     max_val = np.max(np.abs(samples))
-    if max_val == 0:
+    if max_val < noise_threshold:
         return samples
     return samples / max_val
 
