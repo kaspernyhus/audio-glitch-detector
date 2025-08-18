@@ -53,13 +53,11 @@ def find_optimal_threshold(samples: np.ndarray, percentile: float = 99.5) -> flo
 
     base_threshold = np.percentile(non_zero_derivatives, percentile)
 
-    min_threshold = 0.05
-
-    multiplier = 1.2
+    min_threshold = 0.01
+    max_threshold = 1.0
+    multiplier = 1.1
 
     threshold = max(base_threshold * multiplier, min_threshold)
-
-    max_threshold = 0.5
     threshold = min(threshold, max_threshold)
 
     return float(threshold)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import soundfile as sf
 
-from ..core.analysis import calculate_derivative
+from ..core.analysis import calculate_derivative, normalize_samples
 
 
 def save_waveform_png(
@@ -16,7 +16,7 @@ def save_waveform_png(
 ) -> None:
     """Save waveform visualization with derivative analysis as PNG."""
     # Calculate derivative for analysis
-    derivative = calculate_derivative(samples)
+    derivative = calculate_derivative(normalize_samples(samples))
 
     # Create time axes
     duration = samples.shape[1] / sample_rate

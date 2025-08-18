@@ -7,6 +7,7 @@ from .analysis import (
     filter_nearby_glitches,
     find_glitch_indices,
     find_optimal_threshold,
+    normalize_samples,
 )
 
 
@@ -36,13 +37,18 @@ class GlitchDetector:
 
     def detect(self, samples: np.ndarray) -> DetectionResult:
         """Detect glitches in audio samples."""
+
+        normalized_samples = normalize_samples(samples)
+
+        threshold = self.threshold
+
         if self.threshold == 0.0:
             self.auto_threshold = True
-            self.threshold = find_optimal_threshold(samples)
+            threshold = find_optimal_threshold(normalized_samples)
 
-        derivative = calculate_derivative(samples)
+        derivative = calculate_derivative(normalized_samples)
 
-        discontinuities_per_channel = find_glitch_indices(derivative, self.threshold)
+        discontinuities_per_channel = find_glitch_indices(derivative, threshold)
 
         # Combine all channels and remove duplicates
         all_discontinuities = []
@@ -56,7 +62,7 @@ class GlitchDetector:
             sample_indices=filtered_discontinuities,
             timestamps_ms=timestamps,
             total_count=len(filtered_discontinuities),
-            threshold=self.threshold,
+            threshold=threshold,
             auto_threshold=self.auto_threshold,
         )
 
