@@ -65,7 +65,7 @@ def find_optimal_threshold(samples: np.ndarray, percentile: float = 99.5) -> flo
     return float(threshold)
 
 
-def filter_nearby_glitches(discontinuities: list[int], window: int = 10) -> list[int]:
+def filter_nearby_glitches(discontinuities: list[int], window: int = 50) -> list[int]:
     """Filter out glitch detections that are too close together within a sample window."""
     if not discontinuities:
         return []
