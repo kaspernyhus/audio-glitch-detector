@@ -1,6 +1,6 @@
 [project]
 name = "audio-glitch-detector"
-version = "0.1.0"
+version = "0.2.0"
 description = "Detect audio glitches and discontinuities in sinusoidal audio signals"
 authors = [
     {name = "Kasper Nyhus", email = "kanyhus@gmail.com"}
