@@ -8,28 +8,28 @@ class TestFileDetection:
     """Integration tests for file-based glitch detection."""
 
     @pytest.mark.parametrize(
-        "expected_glitches,channel_type",
+        "expected_glitches,filename",
         [
-            (0, "mono"),
-            (0, "stereo"),
-            (2, "mono"),
-            (2, "stereo"),
-            (4, "mono"),
-            (4, "stereo"),
-            (5, "mono"),
-            (5, "stereo"),
+            (0, "sine_discont_0_mono_440hz.wav"),
+            (0, "sine_discont_0_stereo_440_552hz.wav"),
+            (2, "sine_discont_2_mono_1khz.wav"),
+            (2, "sine_discont_2_stereo_900hz.wav"),
+            (4, "sine_discont_4_mono_1khz.wav"),
+            (4, "sine_discont_4_stereo_1khz.wav"),
+            (5, "sine_discont_5_mono_440hz.wav"),
+            (5, "sine_discont_5_stereo_440_552hz.wav"),
+            (6, "sine_discont_6_mono_1_1k2hz.wav"),
         ],
     )
-    def test_detect_expected_glitches(self, test_files_dir, expected_glitches, channel_type):
+    def test_detect_expected_glitches(self, test_files_dir, expected_glitches, filename):
         """Test that detector finds the expected number of glitches in test files."""
-        filename = f"sine_discont_{expected_glitches}_{channel_type}.wav"
         filepath = test_files_dir / filename
 
         # Skip test if file doesn't exist
         if not filepath.exists():
             pytest.skip(f"Test file {filename} not found")
 
-        with FileReader(str(filepath), 1024) as reader:
+        with FileReader(str(filepath), block_size=1024) as reader:
             detector = GlitchDetector(reader.sample_rate)
 
             # Process entire file at once for this test
@@ -43,7 +43,7 @@ class TestFileDetection:
 
     def test_block_based_detection_consistency(self, test_files_dir):
         """Test that block-based detection gives same results as full-file detection."""
-        filepath = test_files_dir / "sine_discont_2_mono.wav"
+        filepath = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         if not filepath.exists():
             pytest.skip("Test file sine_discont_2_mono.wav not found")

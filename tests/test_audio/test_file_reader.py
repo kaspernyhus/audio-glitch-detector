@@ -5,7 +5,7 @@ from audio_glitch_detector.readers.file_reader import FileReader
 
 class TestFileReader:
     def test_context_manager(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         with FileReader(str(file_path), 1024) as reader:
             assert reader._file is not None
@@ -15,7 +15,7 @@ class TestFileReader:
         assert reader._file is None
 
     def test_file_properties(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         with FileReader(str(file_path), 1024) as reader:
             assert reader.sample_rate > 0
@@ -24,7 +24,7 @@ class TestFileReader:
             assert reader.duration_seconds > 0
 
     def test_mono_file_reading(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         with FileReader(str(file_path), 1024) as reader:
             assert reader.channels == 1
@@ -33,7 +33,7 @@ class TestFileReader:
             assert samples.shape[1] > 0  # Should have samples
 
     def test_stereo_file_reading(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_stereo.wav"
+        file_path = test_files_dir / "sine_discont_2_stereo_900hz.wav"
 
         with FileReader(str(file_path), 1024) as reader:
             assert reader.channels == 2
@@ -42,7 +42,7 @@ class TestFileReader:
             assert samples.shape[1] > 0  # Should have samples
 
     def test_block_reading(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         with FileReader(str(file_path), block_size=1024) as reader:
             blocks = list(reader.read_blocks())
@@ -59,7 +59,7 @@ class TestFileReader:
                 pass
 
     def test_runtime_error_when_not_opened(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
         reader = FileReader(str(file_path), 1024)
 
         with pytest.raises(RuntimeError):
@@ -78,7 +78,7 @@ class TestFileReader:
             list(reader.read_blocks())
 
     def test_custom_block_size_and_overlap(self, test_files_dir):
-        file_path = test_files_dir / "sine_discont_2_mono.wav"
+        file_path = test_files_dir / "sine_discont_2_mono_1khz.wav"
 
         with FileReader(str(file_path), block_size=512, overlap=64) as reader:
             assert reader.block_size == 512
