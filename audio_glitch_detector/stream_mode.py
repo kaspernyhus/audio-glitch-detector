@@ -46,10 +46,10 @@ def process_saved_blocks(glitch_queue: BoundedGlitchQueue | None, output: Consol
     )
 
 
-def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: bool, output: ConsoleOutput) -> None:
+def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: int | None, output: ConsoleOutput) -> None:
     """Run real-time glitch detection on an audio stream."""
     exit_event = Event()
-    glitch_queue = BoundedGlitchQueue(max_size=50) if save_blocks else None
+    glitch_queue = BoundedGlitchQueue(max_size=save_blocks) if save_blocks else None
     glitch_count = 0
 
     # Setup signal handler

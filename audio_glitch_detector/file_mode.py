@@ -1,5 +1,6 @@
 import math
 import sys
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -14,7 +15,7 @@ def run_file_mode(
     filename: str,
     threshold: float,
     block_size: int,
-    save_blocks: bool,
+    save_blocks: int | None,
     output: ConsoleOutput,
 ) -> None:
     """Run glitch detection on a file using block-based processing with block overlap."""
@@ -27,7 +28,7 @@ def run_file_mode(
             bit_depth = temp_reader.bit_depth
 
         overlap = int(block_size / 10)
-        glitch_queue = BoundedGlitchQueue(max_size=50) if save_blocks else None
+        glitch_queue = BoundedGlitchQueue(max_size=save_blocks) if save_blocks else None
 
         output.log(f"Analyzing file: {filename}")
         output.log(f"Sample rate: {sample_rate} Hz")
@@ -82,8 +83,9 @@ def run_file_mode(
                         )
                         pbar.update(1)
 
+                current_dir = Path.cwd()
                 output.log(
-                    f"Saved {glitch_queue.count()} glitch blocks to 'glitch_artifacts/' folder",
+                    f"Saved {glitch_queue.count()} glitch blocks to '{current_dir}/glitch_artifacts/'",
                     style="bold green",
                 )
 

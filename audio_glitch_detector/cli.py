@@ -60,8 +60,11 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-s",
         "--save-blocks",
-        action="store_true",
-        help="Save audio blocks containing glitches as .wav files (default: off)",
+        nargs="?",
+        const=50,
+        type=int,
+        metavar="n",
+        help="Save audio blocks containing glitches as .wav files and a visualization. Optional max blocks to save (default: 50)",
     )
     return parser
 
