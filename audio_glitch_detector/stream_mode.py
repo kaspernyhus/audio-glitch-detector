@@ -77,7 +77,7 @@ def run_stream_mode(config: AudioConfig, threshold: float, save_blocks: int | No
             )
 
             if save_blocks and glitch_queue:
-                glitch_queue.add_block(samples, config.sample_rate, frame_number, threshold)
+                glitch_queue.add_block(samples, config.sample_rate, frame_number, result.threshold)
 
     try:
         with StreamReader(config, device_id) as stream:
